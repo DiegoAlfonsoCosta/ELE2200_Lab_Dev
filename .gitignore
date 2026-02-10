@@ -4,3 +4,11 @@ Dev_01/.DS_Store
 Dev_01/Devoir_01_Latex/.DS_Store
 
 .DS_Store
+
+Dev_01/Devoir_01_Latex/out/
+
+Dev_01/Devoir_01_Latex/.idea/
+
+Dev_01/Devoir_01_Matlab/slprj/
+
+*.slxc
