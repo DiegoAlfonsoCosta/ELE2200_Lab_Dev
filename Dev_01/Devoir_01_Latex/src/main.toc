@@ -1,0 +1,21 @@
+\babel@toc {french}{}\relax 
+\contentsline {section}{Introduction}{2}{section*.2}%
+\contentsline {section}{\numberline {1}Paramètres du système}{2}{section.1}%
+\contentsline {section}{\numberline {2}Question 1 — Modèle linéaire, continu et invariant}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}(a) Fonction de transfert en boucle fermée}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}(b) Équation différentielle associée (avec $C(s)=10$ et $H(s)=1$)}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}(c) Modèle d’état}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}(d) Réponses temporelles $x(t)$ (conditions initiales nulles)}{5}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}(e) Tracés de l’erreur $e(t)$ sur 8 s + commentaire}{7}{subsection.2.5}%
+\contentsline {paragraph}{Discussion}{7}{section*.8}%
+\contentsline {paragraph}{Discussion.}{8}{section*.10}%
+\contentsline {paragraph}{Discussion.}{9}{section*.12}%
+\contentsline {subsection}{\numberline {2.6}(f) Interprétation physique de la réponse à l'échelon}{9}{subsection.2.6}%
+\contentsline {section}{\numberline {3}Question 2 — Modèle linéaire avec délai}{10}{section.3}%
+\contentsline {subsection}{\numberline {3.1}(a) Effet d’un délai de $\tau _c=0.05\,\si {s}$ : comparaison}{10}{subsection.3.1}%
+\contentsline {paragraph}{Interprétation physique (Rover).}{11}{section*.14}%
+\contentsline {subsection}{\numberline {3.2}(b) Délai croissant : seuil d’instabilité et interprétation physique}{11}{subsection.3.2}%
+\contentsline {paragraph}{Interprétation physique.}{12}{section*.16}%
+\contentsline {section}{\numberline {4}Question 3 — Modèle non-linéaire (saturation)}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Simulation (échelon amplitude 10, durée 10 s)}{13}{subsection.4.1}%
+\contentsline {paragraph}{Commentaire.}{13}{section*.18}%
