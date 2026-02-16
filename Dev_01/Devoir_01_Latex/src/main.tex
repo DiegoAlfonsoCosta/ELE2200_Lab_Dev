@@ -1,14 +1,477 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+\documentclass[12pt]{article}
 
-\title{test_v01}
-\author{Diego Costa}
-\date{September 2025}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc} % ok on most setups; remove if using lualatex/xelatex
+%%\UseRawInputEncoding
+\usepackage[french]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{xcolor} % optional but needed for colors
+\usepackage{matlab-prettifier}
+\captionsetup{
+    justification=centering
+}
+%\graphicspath{{src/figs/}} % ou {figs/} selon ton projet
+\graphicspath{{figs/}{src/figs/}}
+
+\lstset{  style=Matlab-editor,
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single,
+    breaklines=true,
+    keepspaces=true,
+    columns=flexible,
+    showstringspaces=false}
+
+% ---------- Figure captions style ----------
+\captionsetup{font=small, labelfont=bf}
+
+% ---------- Useful math shortcuts ----------
+\newcommand{\Lap}{\mathcal{L}}
+\newcommand{\R}{\mathbb{R}}
+
+\title{\vspace{-1.5cm}ELE2200 -- Systèmes et Simulation\\Devoir 1 (Hiver 2026)}
+\author{
+    Équipe : \textbf{Costa Diego Alfonso} (2374165) \\
+    \textbf{Gagnon Louis} (2295595)
+}
+\date{\today}
 
 \begin{document}
 
-\maketitle
+% ---------- Cover page ----------
+    \begin{titlepage}
+        \centering
+        \vspace*{2cm}
+        {\LARGE \textbf{Polytechnique Montréal}\par}
+        \vspace{0.5cm}
+        {\Large Département de génie électrique\par}
+        \vspace{2cm}
+        {\Huge \textbf{ELE2200 -- Systèmes et Simulation}\par}
+        \vspace{0.5cm}
+        {\Huge \textbf{Devoir 1 (Hiver 2026)}\par}
+        \vspace{2cm}
 
-\section{Introduction}
-this is text
+        \begin{flushleft}
+            \textbf{Équipe :}\\
+            Costa Diego Alfonso\hfill Matricule : 2374165\\
+            Gagnon Louis \hfill Matricule : 2295595\\
+            \vspace{0.8cm}
+            \textbf{Groupe de laboratoire :} 01\\
+            \textbf{Date de remise :} 10 Février 2026\\
+        \end{flushleft}
+
+        \vfill
+        {\large \today\par}
+    \end{titlepage}
+
+    \tableofcontents
+    \newpage
+
+% ---------- Intro ----------
+    \section*{Introduction}
+    \addcontentsline{toc}{section}{Introduction}
+    Ce rapport présente l'étude de l'asservissement de la position d'un rover motorisé à partir du schéma-blocs fourni.
+
+
+% ---------- Given parameters ----------
+    \section{Paramètres du système}
+    \begin{table}[H]
+        \centering
+        \caption{Valeurs des paramètres du rover.}
+        \begin{tabular}{@{}ll@{}}
+            \toprule
+            Paramètre & Valeur \\
+            \midrule
+            $K_m$ & 0.5 \\
+            $K_r$ & 0.4 \\
+            $\tau_r$ & 0.1 \\
+            $\tau_m$ & 0.5 \\
+            $\tau_c$ & 0.05 \\
+            $u_{\text{sat}}$ & 5 \\
+            \bottomrule
+        \end{tabular}\label{tab:table}
+    \end{table}
+
+% =========================================================
+    \section{Question 1 — Modèle linéaire, continu et invariant}
+%    \subsection[(a) Fonction de transfert en boucle fermée $F(s)=\dfrac{X(s)}{R(s)}$]
+    \subsection[(a) Fonction de transfert en boucle fermée]{(a) Fonction de transfert en boucle fermée $F(s)=\dfrac{X(s)}{R(s)}$}
+    Le calcul de la fonction de transfert a été réalisé principalement à travers un script matlab.\  Nous débutons en décrivant la démarche analytique.\  La fonction de transfert entre l'erreur et la position est donnée par :
+    \[
+        \frac{X(s)}{E(s)} =
+        C \cdot \frac{K_m}{\tau_m s + 1} \cdot \frac{K_r}{s(\tau_r s + 1)}.
+    \]
+
+    La fonction de transfert en boucle fermée est :
+    \[
+        F(s) = \frac{X(s)}{R(s)} =
+        \frac{\dfrac{X(s)}{E(s)}}{1 + \dfrac{X(s)}{E(s)}}.
+    \]
+
+    \[
+        F(s) =  \frac{
+            C\,K_m\,K_r}{
+            s(\tau_m s + 1)(\tau_r s + 1) + C\,K_m\,K_r
+        }.
+    \]
+
+    On utilise ensuite le script suivant pour obtenir les valeurs numériques.
+    \begin{lstlisting}[label={lst:lstlisting01}]
+        % Définition de la variable dans le domaine de Laplace
+        s = tf('s');
+
+        % Définition de la formule pour passer de
+        e_to_x = (C) * (K_m/(tau_m*s+1))* (K_r/(s*(tau_r*s+1)));
+        F= e_to_x/(1+e_to_x);
+
+        syms s;
+
+        [num, den] = tfdata(F, 'v');
+
+        k = den(1);          % leading denominator coefficient
+
+        num_n = num / k;
+        den_n = den / k;
+
+        F_sym = poly2sym(num_n, s) / poly2sym(den_n, s);
+
+        F_sym_simplified = simplify(F_sym)
+
+    \end{lstlisting}
+
+    On obtient donc cette expression pour $F(s)$:
+    \[
+        F(s) = \frac{40}{s^3+12\,s^2+20\,s+40}
+    \]
+    \subsection{(b) Équation différentielle associée (avec $C(s)=10$ et $H(s)=1$)}
+    % Détailler la démarche : F(s) -> équation diff.
+    \[
+        \frac{Y(s)}{U(s)}=\frac{40}{s^3+12s^2+20s+40}
+        \;\;\Longrightarrow\;\;
+        \left(s^3+12s^2+20s+40\right)Y(s)=40\,U(s)
+    \]
+    \[
+        \Longrightarrow\;\;
+        s^3Y(s)+12s^2Y(s)+20sY(s)+40Y(s)=40U(s)
+    \]
+    \begin{gather*}
+        \mathcal{L}^{-1}\{\cdot\}:\quad
+        \mathcal{L}^{-1}\{s^3Y(s)\}=y^{(3)}(t), \quad
+        \mathcal{L}^{-1}\{s^2Y(s)\}=y''(t), \\
+        \mathcal{L}^{-1}\{sY(s)\}=y'(t), \quad
+        \mathcal{L}^{-1}\{Y(s)\}=y(t)
+    \end{gather*}
+    \[
+        \boxed{
+            y^{(3)}(t)+12\,y''(t)+20\,y'(t)+40\,y(t)=40\,u(t)
+        }
+    \]
+    \[
+        y^{(3)}(t) +  a_2 y''(t)+a_1 y'(t)+ a_0 y(t)=  b_0 u(t)
+    \]
+    \[
+        \text{ d'où }  a_2=12, a_1=20, a_0=40 \text{ et } b_0 =40
+    \]
+
+
+    \subsection{(c) Modèle d'état}
+    On utilise le vecteur d'état :
+    \[
+        \mathbf{x}(t) = \begin{bmatrix} x(t) & \dot{x}(t) & \ddot{x}(t) \end{bmatrix}^\top,
+        \quad \text{entrée } r(t), \quad \text{sortie } y(t)=e(t).
+    \]
+    % Donnez A, B, C, D ici.
+    À partir de la forme canonique commandable (\(n=3,\, m=0\)), le modèle d'état s'écrit :
+
+    \[
+        \dot{x}(t) = A\,x(t) + B\,u(t), \qquad y(t) = C\,x(t) + D\,u(t),
+    \]
+
+    avec les matrices suivantes :
+
+    \[
+        A =
+        \begin{bmatrix}
+            0 & 1 & 0 \\
+            0 & 0 & 1 \\
+            -\mathrm{a}_{0} & -\mathrm{a}_{1} & -\mathrm{a}_{2}
+        \end{bmatrix},
+        \qquad
+        B =
+        \begin{bmatrix}
+            0 \\
+            0 \\
+            1
+        \end{bmatrix},
+    \]
+
+    \[
+        C =
+        \begin{bmatrix}
+            b_0 & 0 & 0
+        \end{bmatrix},
+        \qquad
+        D = 0.
+    \]
+
+    On obtient donc les matrices suivantes.
+
+    \[
+        A=
+        \begin{bmatrix}
+            0 & 1 & 0 \\
+            0 & 0 & 1 \\
+            -40 & -20 & -12
+        \end{bmatrix},
+        \qquad
+        B=
+        \begin{bmatrix}
+            0 \\
+            0 \\
+            1
+        \end{bmatrix},
+    \]
+    \[
+        C=
+        \begin{bmatrix}
+            40 & 0 & 0
+        \end{bmatrix},
+        \qquad
+        D=0.
+    \]
+
+    \subsection{(d) Réponses temporelles $x(t)$ (conditions initiales nulles)}
+    Pour trouver les réponses temporelles, on utilise le script matlab qui trouve les pôles de la fonction de transfert, qui trouve les résidus associés à ces pôles et construit une fonction avec ces valeurs dans une forme générale tel $y(t)= \sum_{i=0}^{\text{nbPôles}} r_i\,e^{p_i \,t}$. Par la suite, cette formule est modifiée pour transformer les exponentiels à pôles complexes en fonctions trigonométriques.
+
+
+    \begin{lstlisting}[label={lst:lstlisting02}]
+
+    syms s t;
+
+    F= F_sym_simplified;
+    R= [2 2/s 2/s/s]
+    Y = sym(zeros(1, numel(R)));
+    y = sym(zeros(1, numel(R)));
+
+    for i= 1:numel(R)
+        Y(i) = F* R(i);
+
+        num_vec = sym2poly(expand(num_Y_i));
+        den_vec = sym2poly(expand(den_Y_i));
+        [R,P,~] = residue(num_vec, den_vec);
+
+        y(i) = sum(R .* exp(P*t));
+        simplify(y);
+        fprintf("y(%d)=",i);
+        disp(vpa(y(i),4));
+    end
+    \end{lstlisting}
+    \subsubsection*{Impulsion $r_1(t)=2\delta(t)$}
+    Le script matlab donne cette expression pour $x_2$.
+    \[
+        \begin{aligned}
+            x_2(t)
+            &=0.8255e^{-10.45t}\\
+            &\quad+(-0.4127+2.223i)e^{(-0.7736-1.797i)t}\\
+            &\quad+(-0.4127-2.223i)e^{(-0.7736+1.797i)t}
+        \end{aligned}
+    \]
+    \[
+        \text{En utilisant l'identité suivante}:\quad
+        (a+ib)e^{(\alpha-i\omega)t}+(a-ib)e^{(\alpha+i\omega)t}
+        =2e^{\alpha t}\big(a\cos(\omega t)-b\sin(\omega t)\big),
+    \]
+
+    \[
+        \begin{aligned}
+            x_1(t)
+            &=0.8255e^{-10.45t}\\
+            &\quad+(-0.4127+2.223i)e^{(-0.7736-1.797i)t} \\
+            &\quad+(-0.4127-2.223i)e^{(-0.7736+1.797i)t}\\
+            &=0.8255e^{-10.45t}+2e^{-0.7736t}\Big((-0.4127)\cos(1.797t)-(2.223)\sin(1.797t)\Big)\\
+            &=\boxed{\,0.8255e^{-10.45t}-0.8254\,e^{-0.7736t}\cos(1.797t)-4.446\,e^{-0.7736t}\sin(1.797t)\,}.
+        \end{aligned}
+    \]
+
+    \subsubsection*{Échelon $r_2(t)=2u(t)$}
+    Le script matlab donne cette expression pour $x_1$.
+
+    \[
+        \begin{aligned}
+            x_2(t)
+            &=2.0-0.07897e^{-10.45t}\\
+            &\quad+(-0.9605-0.6433i)e^{(-0.7736-1.797i)t}\\
+            &\quad+(-0.9605+0.6433i)e^{(-0.7736+1.797i)t}\\
+        \end{aligned}
+    \]
+    \[
+        \text{En utilisant l'identité suivante}:\quad
+        (a+ib)e^{(\alpha-i\omega)t}+(a-ib)e^{(\alpha+i\omega)t}
+        =2e^{\alpha t}\big(a\cos(\omega t)-b\sin(\omega t)\big),
+    \]
+    \[
+        \begin{aligned}
+            x_2(t)
+            &=2.0-0.07897e^{-10.45t}\\
+            &\quad+(-0.9605-0.6433i)e^{(-0.7736-1.797i)t}\\
+            &\quad+(-0.9605+0.6433i)e^{(-0.7736+1.797i)t}\\
+            =&\quad2.0-0.07897e^{-10.45t}+2e^{-0.7736t}\Big((-0.9605)\cos(1.797t)-(-0.6433)\sin(1.797t)\Big)\\
+            =&\quad\boxed{\, 2.0 - 0.07897e^{-10.45t} - 1.921e^{-0.7736t}\cos(1.797t) + 1.2866e^{-0.7736t}\sin(1.797t) \,}.
+        \end{aligned}
+    \]
+
+
+    \subsubsection*{Rampe $r_3(t)=2t$}
+    Le script matlab donne cette expression pour $x_3$.
+    \[
+        \begin{aligned}
+            x_3(t)
+            &=0.8255e^{-10.45t}\\
+            &\quad+(-0.4127+2.223i)e^{(-0.7736-1.797i)t}\\
+            &\quad+(-0.4127-2.223i)e^{(-0.7736+1.797i)t}\\
+        \end{aligned}
+    \]
+    \[
+        \text{En utilisant l'identité suivante}:\quad
+        (a+ib)e^{(\alpha-i\omega)t}+(a-ib)e^{(\alpha+i\omega)t}
+        =2e^{\alpha t}\big(a\cos(\omega t)-b\sin(\omega t)\big),
+    \]
+    \[
+        \begin{aligned}
+            x_3(t)
+            &=1.0+0.007555e^{-10.45t}\\
+            &\quad+(0.4962-0.3209i)e^{(-0.7736-1.797i)t}\\
+            &\quad+(0.4962+0.3209i)e^{(-0.7736+1.797i)t}\\
+            =&\quad1.0+0.007555e^{-10.45t}+2e^{-0.7736t}\Big((0.4962)\cos(1.797t)-(-0.3209)\sin(1.797t)\Big)\\
+            =&\quad\boxed{\,1.0+0.007555e^{-10.45t}+0.9924\,e^{-0.7736t}\cos(1.797t)+0.6418\,e^{-0.7736t}\sin(1.797t)\,}.
+        \end{aligned}
+    \]
+
+    \subsection{(e) Tracés de l'erreur $e(t)$ sur 8 s + commentaire}
+%
+    \begin{figure}[H]
+
+        \centering
+        \begin{subfigure}[t]{0.49\linewidth}
+                \centering
+                \includegraphics[width=\linewidth]{erreur_impulsion}
+                \caption{$e(t)$ pour $r_1(t)=2\delta(t)$.}
+                \label{subfig:subfig_01}
+        \end{subfigure}\hfill
+        \hfill
+        \begin{subfigure}[t]{0.49\linewidth}
+                \centering
+                \includegraphics[width=\linewidth]{TempsRep_impulsion}
+                \caption{Temps de réponse à $2 \%$ pour $r_1(t)=2\delta(t)$.}
+                \label{subfig:subfig_02}
+        \end{subfigure}\hfill
+        \caption{Erreur et temps de réponse pour $r_1(t)=2\delta(t)$.}\label{fig:figure01}
+    \end{figure}\label{fig:figure2}
+
+    \paragraph{Discussion}
+    La figure~\ref{subfig:subfig_01}\, met en évidence un dépassement initial suivi de légères oscillations amorties, caractéristiques d'un système sous-amorti mais stable. Enfin, l'erreur en régime permanent est nulle (soit une valeur à $t=8$ de $-4.633321e-03$,), puisque l'erreur converge vers zéro lorsque $t \to \infty$.
+    Comme on le voit à la figure~\ref{subfig:subfig_02}\, le temps de réponse à 2\,\% est de $7.97616\,\text{s}$, correspondant à l'instant où l'erreur entre définitivement dans la bande de tolérance. Cette valeur est très proche de 8 puisque la valeur en régime permanent est nulle donc $2\%$ devient une tolérance très petite.
+
+
+    \begin{figure}[H]
+
+        \centering
+        \begin{subfigure}[t]{0.49\linewidth}
+                \centering
+                \includegraphics[width=\linewidth]{erreur_echelon}
+                \caption{$e(t)$ pour $r_2(t)=2H(t)$.}
+                \label{subfig:subfig_03}
+        \end{subfigure}\hfill
+        \hfill
+        \begin{subfigure}[t]{0.49\linewidth}
+                \centering
+                \includegraphics[width=\linewidth]{TempsRep_echelon}
+                \caption{Temps de réponse à $2 \%$ pour $r_2(t)=2H(t)$.}
+                \label{subfig:subfig_04}
+        \end{subfigure}\hfill
+        \caption{Erreur et temps de réponse pour $r_2(t)=2H(t)$.}
+    \end{figure}\label{fig:figure3}
+
+    \paragraph{Discussion.}
+        La figure~\ref{subfig:subfig_03} met en évidence une réponse transitoire présentant un dépassement initial suivi de légères oscillations amorties. Ce comportement est caractéristique d'un système sous-amorti mais stable. L'erreur décroît progressivement et converge vers zéro, ce qui indique que le système est capable de suivre correctement une entrée échelon. Ainsi, l'erreur en régime permanent est nulle, ce qui signifie qu'à long terme le rover atteint exactement la consigne imposée par l'entrée.
+
+        Comme on le voit à la figure~\ref{subfig:subfig_04}, le temps de réponse à 2\,\% est d'environ $7.98\,\text{s}$. Il correspond à l'instant à partir duquel l'erreur demeure définitivement à l'intérieur de la bande de tolérance de $\pm 2\,\%$ autour de la valeur finale. Cette valeur est très proche de $8\,\text{s}$, ce qui est cohérent avec le fait que l'erreur en régime permanent est nulle, rendant la bande de tolérance particulièrement étroite.
+    \begin{figure}[H]
+
+        \centering
+        \begin{subfigure}[t]{0.49\linewidth}
+                \centering
+                \includegraphics[width=\linewidth]{erreur_rampe}
+                \caption{$e(t)$ pour $r_3(t)=2t$.}
+                \label{subfig:subfig_05}
+        \end{subfigure}\hfill
+        \hfill
+        \begin{subfigure}[t]{0.49\linewidth}
+                \centering
+                \includegraphics[width=\linewidth]{TempsRep_rampe}
+                \caption{Temps de réponse à $2 \%$ pour $r_3(t)=2t$.}
+                \label{subfig:subfig_06}
+        \end{subfigure}\hfill
+        \caption{Erreur et temps de réponse pour $r_3(t)=2t$.}
+    \end{figure}\label{fig:figure4}
+    \paragraph{Discussion.}
+        La figure~\ref{subfig:subfig_05} montre que, pour une entrée rampe $r_3(t)=2t$, l'erreur présente un dépassement initial suivi d'oscillations amorties avant de se stabiliser. Contrairement aux cas de l'impulsion et de l'échelon, l'erreur ne converge pas vers zéro mais tend vers une valeur constante non nulle. Cela indique que le système ne peut pas suivre parfaitement une entrée de type rampe, ce qui est typique d'un système de type insuffisant pour annuler l'erreur statique face à une rampe.
+
+        Comme illustré à la figure~\ref{subfig:subfig_06}, le temps de réponse à 2\,\% est d'environ $5\,\text{s}$. Il correspond à l'instant à partir duquel l'erreur demeure définitivement à l'intérieur de la bande de tolérance de $\pm 2\,\%$ autour de la valeur en régime permanent. La présence d'une erreur statique non nulle en régime permanent explique que la bande de tolérance soit centrée autour d'une valeur différente de zéro.
+    \subsection{(f) Interprétation physique de la réponse à l'échelon}
+    Lorsque l'entrée r(t) est un échelon, elle représente une consigne brusque imposée au Rover, soit une demande soudaine de position. La réponse de l'erreur e(t) traduit alors l'écart entre la consigne et la grandeur réellement suivie par le Rover.
+
+    La valeur de e(t) en régime permanent représente l'erreur de suivi résiduelle une fois le régime établi. Si cette  valeur est nulle, cela signifie que le Rover atteint exactement la consigne imposée, ce qui traduit une bonne précision statique du système de commande. Une valeur non nulle indiquerait au contraire une erreur permanente.
+
+    \section{Question 2 — Modèle linéaire avec délai}
+        \subsection{(a) Effet d'un délai de $\tau_c=0.05\,\si{s}$ : comparaison}
+            \begin{figure}[H]
+                        \centering
+                        \includegraphics[width=0.8\linewidth]{erreur_echelon_delai}
+                        \caption{$e(t)$ avec et sans délai de $\tau_c = 0.05$ pour $r(t)=2$.}\label{fig:figure2a}
+            \end{figure}
+        La figure~\ref{fig:figure2a} superpose $e(t)$ sans délai ($\tau_c=0$) et avec un délai $\tau_c=0.05\,\si{s}$. On observe que le délai décale la réponse dans le temps et tend à accentuer légèrement le dépassement ainsi que les oscillations transitoires : l'erreur met un peu plus de temps à s'amortir. En revanche, la valeur en régime permanent reste proche de zéro, ce qui indique que le suivi de la consigne échelon est bon à long terme (erreur statique faible / nulle).
+
+        \paragraph{Interprétation physique (Rover).}
+        Dans le contexte du Rover, un échelon $r(t)=2H(t)$ représente un changement brusque de consigne (par ex. une nouvelle position ou vitesse désirée). L'erreur $e(t)=r(t)-y(t)$ mesure l'écart instantané entre la consigne et la sortie réelle. Le délai $\tau_c$ correspond à un retard de perception/communication/traitement ou d'actionnement : le Rover “réagit en retard”, donc corrige trop tard, ce qui augmente la tendance aux oscillations. La valeur en régime permanent de $e(t)$ représente l'erreur statique finale : si elle vaut $\approx 0$, le Rover finit par atteindre la consigne (pas de biais résiduel).
+
+        \subsection{(b) Délai croissant : seuil d'instabilité et interprétation physique}
+        \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.8\linewidth]{erreur_echelon_delai_multiples}
+                    \caption{$e(t)$ avec  plusieurs valeurs de $\tau_c$ pour $r(t)=2$.}
+        \end{figure}\label{subsec:figure2b}
+        En utilisant un $\tau_c$ allant de 0.48 à 0.49, on observe la saturation à $\tau_c = 0.485$
+        La figure~\ref{subsec:figure2b} montre que lorsque $\tau_c$ augmente, les oscillations deviennent plus marquées et l'amortissement diminue : le délai ajoute un déphasage dans la boucle, ce qui réduit la marge de stabilité. À partir d'environ $\tau_c \approx 0.485\,\si{s}$ (ordre de grandeur d'après vos essais), les oscillations ne décroissent plus et leur amplitude augmente avec le temps : on considère alors que le système devient instable.
+
+        \paragraph{Interprétation physique.}
+        Physiquement, un délai trop grand signifie que les corrections appliquées par le Rover arrivent “trop tard” par rapport à l'état réel du système. La commande agit alors dans le mauvais sens au mauvais moment (sur-correction), ce qui entretient et amplifie les oscillations. Autrement dit, le retard transforme une boucle censée corriger l'erreur en une boucle qui injecte de l'énergie dans la dynamique, jusqu'à divergence ou oscillations auto-entretenues.
+
+    \section{Question 3 — Modèle non-linéaire (saturation)}
+    \subsection{Simulation (échelon amplitude 10, durée 10 s)}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\linewidth]{position_echelon_saturation}
+        \caption{Signal avant saturation $\omega(t)$, après saturation $\omega_{\text{sat}}(t)$, et position $x(t)$.}
+        \label{fig:q3_sat}
+    \end{figure}
+
+    \paragraph{Commentaire.}
+    On peut voir dans la figure \ref{fig:q3_sat} ci-dessus que le signal après saturation demeure constant (à $u_{sat} = 5$) jusqu’à environ 5 secondes tandis que le signal avant saturation comporte une grande oscillation entre 0 et environ 5 secondes.
+    Cela est dû à la contrainte de saturation du moteur, symbolisé par le bloc de saturation dans Simulink.
+    On observe également dans la figure 6 que le signal de sortie x(t) semble être linéaire dans le même intervalle que celui dans lequel le signal est saturé (i.e. environ entre 0 et 5 secondes).
+    On pourrait donc spéculer que la contrainte de saturation du moteur rend la sortie linéaire plutôt que non linéaire dans ce que l’on pourrait appeler le régime de saturation du moteur (l'intervalle de temps tel que la sortie du moteur est saturée).
+
+    \appendix
+
 \end{document}
