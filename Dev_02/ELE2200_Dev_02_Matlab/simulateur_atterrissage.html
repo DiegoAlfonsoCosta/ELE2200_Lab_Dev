@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur d'Atterrissage - ELE2200</title>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --bg-dark: #0b0e17;
+            --bg-card: #111827;
+            --bg-panel: #1a2235;
+            --bg-input: #0d1321;
+            --accent: #f97316;
+            --accent-glow: rgba(249, 115, 22, 0.3);
+            --success: #22c55e;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --purple: #a855f7;
+            --text: #e5e7eb;
+            --text-dim: #6b7280;
+            --border: #1e293b;
+            --border-light: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Stars background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 30% 60%, rgba(255, 255, 255, 0.3), transparent),
+                radial-gradient(1.5px 1.5px at 50% 10%, rgba(255, 255, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 70% 40%, rgba(255, 255, 255, 0.3), transparent),
+                radial-gradient(1px 1px at 80% 80%, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 90% 30%, rgba(255, 255, 255, 0.2), transparent),
+                radial-gradient(1px 1px at 15% 90%, rgba(255, 255, 255, 0.3), transparent),
+                radial-gradient(1.5px 1.5px at 45% 75%, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 65% 95%, rgba(255, 255, 255, 0.3), transparent),
+                radial-gradient(1px 1px at 25% 45%, rgba(255, 255, 255, 0.2), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 24px 0 20px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #fb923c, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        header .subtitle {
+            color: var(--text-dim);
+            font-size: 0.95em;
+            font-weight: 400;
+        }
+
+        header .subtitle span {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+        }
+
+        .card-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .card-header .dot.green {
+            background: var(--success);
+        }
+
+        .card-header .dot.blue {
+            background: var(--info);
+        }
+
+        .card-header .dot.purple {
+            background: var(--purple);
+        }
+
+        /* Canvas */
+        .sim-canvas-wrap {
+            position: relative;
+            background: #050810;
+            cursor: grab;
+        }
+
+        .sim-canvas-wrap.panning {
+            cursor: grabbing;
+        }
+
+        .sim-canvas-wrap.locked {
+            cursor: default;
+        }
+
+        #simulator {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Camera controls overlay */
+        .camera-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .cam-btn {
+            background: rgba(17, 24, 39, 0.85);
+            border: 1px solid var(--border-light);
+            color: var(--text);
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+
+        .cam-btn:hover {
+            background: rgba(17, 24, 39, 0.95);
+            border-color: var(--accent);
+        }
+
+        .cam-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .zoom-indicator {
+            background: rgba(17, 24, 39, 0.85);
+            border: 1px solid var(--border-light);
+            color: var(--text-dim);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7em;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Timeline */
+        .timeline-bar {
+            padding: 8px 16px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .timeline-bar input[type="range"] {
+            flex: 1;
+            min-width: 200px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: var(--border-light);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .timeline-bar input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+            cursor: pointer;
+        }
+
+        .time-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            color: var(--accent);
+            min-width: 100px;
+            text-align: right;
+        }
+
+        /* Controls sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar .card-body {
+            padding: 12px 16px;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-play {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-play:hover {
+            background: #fb923c;
+        }
+
+        .btn-play:disabled {
+            background: #374151;
+            color: #6b7280;
+            cursor: default;
+        }
+
+        .btn-reset {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-reset:hover {
+            border-color: var(--accent);
+        }
+
+        .btn-export {
+            background: var(--info);
+            color: #fff;
+        }
+
+        .btn-export:hover {
+            background: #2563eb;
+        }
+
+        .btn-speed {
+            background: var(--bg-input);
+            color: var(--info);
+            border: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8em;
+            flex: 0 0 auto;
+            min-width: 60px;
+        }
+
+        .btn-speed:hover {
+            border-color: var(--info);
+        }
+
+        /* Telemetry */
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .telem-item {
+            background: var(--bg-input);
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        .telem-item .label {
+            font-size: 0.65em;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .telem-item .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            color: var(--success);
+        }
+
+        .telem-item.wide {
+            grid-column: span 2;
+        }
+
+        /* Result banner */
+        .result-banner {
+            display: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .result-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            display: block;
+        }
+
+        .result-failure {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            display: block;
+        }
+
+        /* Criteria */
+        .criteria-list {
+            font-size: 0.8em;
+        }
+
+        .criteria-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .criteria-row:last-child {
+            border-bottom: none;
+        }
+
+        .criteria-row .crit-label {
+            color: var(--text-dim);
+        }
+
+        .criteria-row .crit-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        .crit-ok {
+            color: var(--success);
+        }
+
+        .crit-fail {
+            color: var(--danger);
+        }
+
+        .crit-pending {
+            color: var(--text-dim);
+        }
+
+        /* Graphs section */
+        .graphs-section {
+            margin-top: 16px;
+        }
+
+        .graphs-section h2 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .graphs-section h2 .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .graphs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .graphs-grid.triple {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .graph-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .graph-card .graph-title {
+            padding: 8px 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .graph-card .graph-title .color-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .graph-card canvas {
+            display: block;
+        }
+
+        /* Params info */
+        .params-bar {
+            margin-top: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            font-size: 0.8em;
+            flex-wrap: wrap;
+        }
+
+        .params-bar .param {
+            color: var(--text-dim);
+        }
+
+        .params-bar .param span {
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 24px 0 16px;
+            color: var(--text-dim);
+            font-size: 0.75em;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .graphs-grid.triple {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .graphs-grid,
+            .graphs-grid.triple {
+                grid-template-columns: 1fr;
+            }
+
+            .telemetry-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline-bar {
+                flex-direction: column;
+            }
+
+            .timeline-bar input[type="range"] {
+                width: 100%;
+            }
+        }
+
+        /* Smooth fade in */
+        .app {
+            animation: fadeUp 0.6s ease-out;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header>
+            <h1>Simulateur d'Atterrissage de Fusée</h1>
+            <p class="subtitle"><span>ELE2200</span> &mdash; Systemes et Simulation &mdash; Polytechnique Montreal</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left: Canvas -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="dot"></div> Visualisation
+                </div>
+                <div class="sim-canvas-wrap" id="canvasWrap">
+                    <canvas id="simulator" width="900" height="600"></canvas>
+                    <div class="camera-controls">
+                        <button class="cam-btn active" id="btnLock" title="Lock/Unlock camera">🔒</button>
+                        <button class="cam-btn" id="btnZoomIn" title="Zoom in">+</button>
+                        <button class="cam-btn" id="btnZoomOut" title="Zoom out">−</button>
+                        <button class="cam-btn" id="btnResetView" title="Reset view">⟲</button>
+                        <div class="zoom-indicator" id="zoomIndicator">100%</div>
+                    </div>
+                </div>
+                <div class="timeline-bar">
+                    <button class="btn btn-play" id="btnPlay" disabled title="Lecture / Pause">&#9654;</button>
+                    <button class="btn btn-reset" id="btnReset" title="Reinitialiser">&#8634;</button>
+                    <button class="btn btn-export" id="btnExport" title="Exporter en PNG">📷 PNG</button>
+                    <input type="range" id="timeSlider" min="0" max="1000" value="0">
+                    <div class="time-display" id="timeDisplay">0.00 / 0.00 s</div>
+                    <button class="btn btn-speed" id="btnSpeed">1x</button>
+                </div>
+            </div>
+
+            <!-- Right: Sidebar -->
+            <div class="sidebar">
+                <!-- Data Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="dot blue"></div> Données
+                    </div>
+                    <div class="card-body">
+                        <div style="text-align: center; padding: 8px; font-size: 0.85em; color: var(--text-dim);">
+                            <div id="fileName"
+                                style="color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;">
+                                En attente...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telemetry -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="dot green"></div> Télémétrie
+                    </div>
+                    <div class="card-body">
+                        <div class="telemetry-grid">
+                            <div class="telem-item">
+                                <div class="label">position $x$</div>
+                                <div class="value" id="telX">50.00 m</div>
+                            </div>
+                            <div class="telem-item">
+                                <div class="label">position $y$</div>
+                                <div class="value" id="telY">100.00 m</div>
+                            </div>
+                            <div class="telem-item">
+                                <div class="label">vitesse $\dot{x}$</div>
+                                <div class="value" id="telVx">0.00 m/s</div>
+                            </div>
+                            <div class="telem-item">
+                                <div class="label">vitesse $\dot{y}$</div>
+                                <div class="value" id="telVy">0.00 m/s</div>
+                            </div>
+                            <div class="telem-item">
+                                <div class="label">angle $\theta$</div>
+                                <div class="value" id="telTheta">0.00 rad</div>
+                            </div>
+                            <div class="telem-item">
+                                <div class="label">poussée $F$</div>
+                                <div class="value" id="telF">9810 N</div>
+                            </div>
+                            <div class="telem-item wide">
+                                <div class="label">angle tuyère $\delta$</div>
+                                <div class="value" id="telDelta">0.00 rad</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result -->
+                <div id="resultBanner" class="result-banner"></div>
+
+                <!-- Criteria -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="dot purple"></div> Critères d'atterrissage
+                    </div>
+                    <div class="card-body criteria-list">
+                        <div class="criteria-row">
+                            <span class="crit-label">$|x| < 5$ m</span>
+                                    <span class="crit-val crit-pending" id="critX">&mdash;</span>
+                        </div>
+                        <div class="criteria-row">
+                            <span class="crit-label">$4 \leq y \leq 4.5$ m</span>
+                            <span class="crit-val crit-pending" id="critY">&mdash;</span>
+                        </div>
+                        <div class="criteria-row">
+                            <span class="crit-label">$|\dot{x}| < 1$ m/s</span>
+                                    <span class="crit-val crit-pending" id="critVx">&mdash;</span>
+                        </div>
+                        <div class="criteria-row">
+                            <span class="crit-label">$|\dot{y}| < 2$ m/s</span>
+                                    <span class="crit-val crit-pending" id="critVy">&mdash;</span>
+                        </div>
+                        <div class="criteria-row">
+                            <span class="crit-label">$|\theta| < 0.1$ rad</span>
+                                    <span class="crit-val crit-pending" id="critTheta">&mdash;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphs: Inputs -->
+        <div class="graphs-section">
+            <h2>
+                <div class="dot" style="background:var(--accent)"></div> Commandes (Entrées)
+            </h2>
+            <div class="graphs-grid">
+                <div class="graph-card">
+                    <div class="graph-title">
+                        <div class="color-dot" style="background:#f59e0b"></div> poussée $F$ (N)
+                    </div>
+                    <canvas id="graphF" width="800" height="160"></canvas>
+                </div>
+                <div class="graph-card">
+                    <div class="graph-title">
+                        <div class="color-dot" style="background:#ef4444"></div> angle tuyère $\delta$ (rad)
+                    </div>
+                    <canvas id="graphDelta" width="800" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphs: States -->
+        <div class="graphs-section">
+            <h2>
+                <div class="dot" style="background:var(--info)"></div> Etats du systeme
+            </h2>
+            <div class="graphs-grid triple">
+                <div class="graph-card">
+                    <div class="graph-title">
+                        <div class="color-dot" style="background:#3b82f6"></div> position $x$ (m)
+                    </div>
+                    <canvas id="graphX" width="800" height="160"></canvas>
+                </div>
+                <div class="graph-card">
+                    <div class="graph-title">
+                        <div class="color-dot" style="background:#22c55e"></div> position $y$ (m)
+                    </div>
+                    <canvas id="graphY" width="800" height="160"></canvas>
+                </div>
+                <div class="graph-card">
+                    <div class="graph-title">
+                        <div class="color-dot" style="background:#a855f7"></div> angle $\theta$ (rad)
+                    </div>
+                    <canvas id="graphTheta" width="800" height="160"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Params bar -->
+        <div class="params-bar">
+            <div class="param">m = <span>1000 kg</span></div>
+            <div class="param">J = <span>6 000 kg.m&sup2;</span></div>
+            <div class="param">d = <span>4 m</span></div>
+            <div class="param">g = <span>9.81 m/s&sup2;</span></div>
+            <div class="param">T<sub>s</sub> = <span>0.01 s</span></div>
+        </div>
+
+        <footer>
+            ELE2200 &mdash; Systèmes et Simulation &mdash; Polytechnique Montréal &mdash; Hiver 2026
+        </footer>
+    </div>
+
+    <!-- HTML2Canvas for PNG export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="trajectory_data.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            // === PHYSICS PARAMETERS ===
+            const PARAMS = {
+                m: 1000, J: 6000, d: 4, g: 9.81, Fmax: 20000
+            };
+
+            // === STATE ===
+            let trajectoryData = [];
+            let currentState = { t: 0, x: 50, y: 100, vx: 0, vy: 0, theta: 0, F: 9810, delta: 0 };
+            let isPlaying = false;
+            let currentTime = 0;
+            let duration = 0;
+            let playbackSpeed = 1;
+            let lastFrameTime = 0;
+            let trailPoints = [];
+            let isCrashed = false;
+            let impactX = 0;
+            let explosionParticles = [];
+
+            // Camera system
+            let camera = {
+                locked: true,
+                zoom: 1.0,
+                panX: 0,
+                panY: 0,
+                baseView: { left: -15, right: 65, bottom: -5, top: 115 }
+            };
+
+            let mouseDown = false;
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+
+            // === DOM ===
+            const canvas = document.getElementById('simulator');
+            const ctx = canvas.getContext('2d');
+            const canvasWrap = document.getElementById('canvasWrap');
+            const slider = document.getElementById('timeSlider');
+            const btnPlay = document.getElementById('btnPlay');
+            const btnReset = document.getElementById('btnReset');
+            const btnSpeed = document.getElementById('btnSpeed');
+            const btnExport = document.getElementById('btnExport');
+            const btnLock = document.getElementById('btnLock');
+            const btnZoomIn = document.getElementById('btnZoomIn');
+            const btnZoomOut = document.getElementById('btnZoomOut');
+            const btnResetView = document.getElementById('btnResetView');
+            const zoomIndicator = document.getElementById('zoomIndicator');
+            const timeDisplay = document.getElementById('timeDisplay');
+            const resultBanner = document.getElementById('resultBanner');
+
+            // Graph configs
+            const graphConfigs = [
+                { id: 'graphF', key: 'F', color: '#f59e0b', unit: 'N' },
+                { id: 'graphDelta', key: 'delta', color: '#ef4444', unit: 'rad' },
+                { id: 'graphX', key: 'x', color: '#3b82f6', unit: 'm' },
+                { id: 'graphY', key: 'y', color: '#22c55e', unit: 'm' },
+                { id: 'graphTheta', key: 'theta', color: '#a855f7', unit: 'rad' }
+            ];
+
+            // --- High DPI Support ---
+            function setupCanvas(cvs, width, height) {
+                const dpr = window.devicePixelRatio || 1;
+                cvs.width = width * dpr;
+                cvs.height = height * dpr;
+                cvs.style.width = width + 'px';
+                cvs.style.height = height + 'px';
+                const gc = cvs.getContext('2d');
+                gc.scale(dpr, dpr);
+                return gc;
+            }
+
+            // Stored graph info for cursor drawing
+            const graphCache = {};
+
+            // Initial setup for main simulator
+            setupCanvas(canvas, 900, 600);
+
+            // === CAMERA CONTROLS ===
+            btnLock.addEventListener('click', () => {
+                camera.locked = !camera.locked;
+                btnLock.classList.toggle('active');
+                btnLock.textContent = camera.locked ? '🔒' : '🔓';
+                canvasWrap.className = camera.locked ? 'sim-canvas-wrap locked' : 'sim-canvas-wrap';
+                if (camera.locked) {
+                    camera.panX = 0;
+                    camera.panY = 0;
+                }
+                renderAll();
+            });
+
+            btnZoomIn.addEventListener('click', () => {
+                camera.zoom = Math.min(camera.zoom * 1.2, 5);
+                updateZoomIndicator();
+                renderAll();
+            });
+
+            btnZoomOut.addEventListener('click', () => {
+                camera.zoom = Math.max(camera.zoom / 1.2, 0.2);
+                updateZoomIndicator();
+                renderAll();
+            });
+
+            btnResetView.addEventListener('click', () => {
+                camera.zoom = 1.0;
+                camera.panX = 0;
+                camera.panY = 0;
+                updateZoomIndicator();
+                renderAll();
+            });
+
+            function updateZoomIndicator() {
+                zoomIndicator.textContent = Math.round(camera.zoom * 100) + '%';
+            }
+
+            // Mouse controls for pan
+            canvas.addEventListener('mousedown', (e) => {
+                if (!camera.locked) {
+                    mouseDown = true;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    canvasWrap.classList.add('panning');
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (mouseDown && !camera.locked) {
+                    const dx = e.clientX - lastMouseX;
+                    const dy = e.clientY - lastMouseY;
+
+                    // Convert pixel movement to world coordinates
+                    const worldWidth = camera.baseView.right - camera.baseView.left;
+                    const worldHeight = camera.baseView.top - camera.baseView.bottom;
+                    camera.panX -= (dx / canvas.clientWidth) * worldWidth / camera.zoom;
+                    camera.panY += (dy / canvas.clientHeight) * worldHeight / camera.zoom;
+
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    renderAll();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                mouseDown = false;
+                canvasWrap.classList.remove('panning');
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                mouseDown = false;
+                canvasWrap.classList.remove('panning');
+            });
+
+            // Mouse wheel for zoom
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                camera.zoom = Math.max(0.2, Math.min(5, camera.zoom * zoomFactor));
+                updateZoomIndicator();
+                renderAll();
+            });
+
+            // Export to PNG
+            btnExport.addEventListener('click', async () => {
+                try {
+                    btnExport.textContent = '⏳ Export...';
+                    btnExport.disabled = true;
+
+                    const appElement = document.querySelector('.app');
+
+                    // Create capture with specific options for high quality
+                    const canvas = await html2canvas(appElement, {
+                        backgroundColor: '#0b0e17',
+                        scale: 2, // High resolution
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        onclone: (clonedDoc) => {
+                            const clonedApp = clonedDoc.querySelector('.app');
+                            const originalApp = document.querySelector('.app');
+
+                            // 1. Fix the background and general brightness
+                            clonedDoc.body.style.backgroundColor = '#0b0e17';
+                            if (clonedApp) {
+                                clonedApp.style.backgroundColor = '#0b0e17';
+                                clonedApp.style.backgroundImage = 'none'; // Remove star gradient
+                            }
+
+                            // 2. Style Baking: Copy computed styles for all key components
+                            // This bypasses html2canvas's struggle with CSS variables and inherited opacity
+                            const originalElements = originalApp.querySelectorAll('*');
+                            const clonedElements = clonedApp.querySelectorAll('*');
+
+                            // Important properties to "bake"
+                            const propsToCopy = [
+                                'color', 'backgroundColor', 'borderColor',
+                                'borderTopColor', 'borderBottomColor',
+                                'borderLeftColor', 'borderRightColor',
+                                'opacity', 'visibility', 'display'
+                            ];
+
+                            originalElements.forEach((orig, i) => {
+                                const clone = clonedElements[i];
+                                if (!clone) return;
+
+                                const style = window.getComputedStyle(orig);
+
+                                // Direct style injection
+                                propsToCopy.forEach(prop => {
+                                    // Resolve vars manually if they still exist in computed style
+                                    let val = style[prop];
+                                    if (val && val.includes('var(')) {
+                                        // This shouldn't happen with getComputedStyle but just in case
+                                        val = style.getPropertyValue(prop.replace(/[A-Z]/g, m => "-" + m.toLowerCase()));
+                                    }
+
+                                    // Force opaque background for cards and items to prevent "wash out"
+                                    if (prop === 'backgroundColor' && (val === 'transparent' || val.includes('rgba(0, 0, 0, 0)'))) {
+                                        // Keep it transparent if it's meant to be (like a span)
+                                    } else if (prop === 'backgroundColor') {
+                                        clone.style.backgroundColor = val;
+                                    } else {
+                                        clone.style[prop] = val;
+                                    }
+                                });
+
+                                // Specific fix for cards to ensure they are visible
+                                if (orig.classList.contains('card')) {
+                                    clone.style.backgroundColor = '#111827';
+                                    clone.style.opacity = '1';
+                                }
+
+                                // Specific fix for telemetry values
+                                if (orig.classList.contains('value')) {
+                                    clone.style.color = style.color;
+                                }
+                            });
+
+                            // Remove pseudo-stars
+                            const style = clonedDoc.createElement('style');
+                            style.innerHTML = `
+                                * { text-shadow: none !important; box-shadow: none !important; transition: none !important; animation: none !important; }
+                                body::before { display: none !important; }
+                                .sim-canvas-wrap { background: #000 !important; }
+                            `;
+                            clonedDoc.head.appendChild(style);
+                        }
+                    });
+
+                    canvas.toBlob((blob) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `simulateur_atterrissage_${Date.now()}.png`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        btnExport.textContent = '📷 PNG';
+                        btnExport.disabled = false;
+                    });
+                } catch (err) {
+                    console.error('Export error:', err);
+                    alert('Erreur lors de l\'export PNG : ' + err.message);
+                    btnExport.textContent = '📷 PNG';
+                    btnExport.disabled = false;
+                }
+            });
+
+            // === INIT ===
+            btnPlay.addEventListener('click', togglePlay);
+            btnReset.addEventListener('click', resetSim);
+            btnSpeed.addEventListener('click', cycleSpeed);
+
+
+            slider.addEventListener('input', () => {
+                if (trajectoryData.length === 0) return;
+                currentTime = (slider.value / 1000) * duration;
+                updateFromTime(currentTime);
+                renderAll();
+            });
+
+            // Check external data
+            function tryLoadData() {
+                if (typeof window.SIM_DATA !== 'undefined' && Array.isArray(window.SIM_DATA)) {
+                    const data = window.SIM_DATA.map(p => {
+                        if (Array.isArray(p)) {
+                            return { t: p[0], x: p[1], y: p[2], vx: p[3], vy: p[4], theta: p[5], F: p[6], delta: p[7] };
+                        }
+                        return p;
+                    });
+                    loadTrajectory(data, 'trajectory_data.js');
+                } else {
+                    document.getElementById('fileName').textContent = 'Aucune donnée détectée';
+                    renderScene();
+                }
+            }
+            tryLoadData();
+
+            requestAnimationFrame(animate);
+
+            // === LOAD DATA ===
+            function loadTrajectory(data, name) {
+                trajectoryData = data.sort((a, b) => a.t - b.t);
+                duration = trajectoryData[trajectoryData.length - 1].t;
+                document.getElementById('fileName').textContent = name + ' (' + data.length + ' pts, ' + duration.toFixed(1) + 's)';
+
+                // Calculate trajectory bounds for viewport
+                let minX = Infinity, maxX = -Infinity;
+                let minY = Infinity, maxY = -Infinity;
+
+                trajectoryData.forEach(p => {
+                    if (p.x < minX) minX = p.x;
+                    if (p.x > maxX) maxX = p.x;
+                    if (p.y < minY) minY = p.y;
+                    if (p.y > maxY) maxY = p.y;
+                });
+
+                // Add padding
+                const dx = maxX - minX || 20;
+                const dy = maxY - minY || 20;
+
+                // Ensure at least some width/height
+                const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+                const spanX = Math.max(dx * 1.4, 40);
+                const spanY = Math.max(dy * 1.4, 40);
+
+                camera.baseView.left = center.x - spanX / 2;
+                camera.baseView.right = center.x + spanX / 2;
+                camera.baseView.bottom = -15;
+                camera.baseView.top = Math.max(maxY + 20, 50);
+
+                btnPlay.disabled = false;
+                drawAllGraphs();
+                resetSim();
+            }
+
+
+
+            // === PLAYBACK ===
+            function togglePlay() {
+                if (trajectoryData.length === 0) return;
+                isPlaying = !isPlaying;
+                btnPlay.innerHTML = isPlaying ? '&#9646;&#9646;' : '&#9654;';
+                if (isPlaying) {
+                    lastFrameTime = performance.now();
+                    if (currentTime >= duration - 0.01) {
+                        currentTime = trajectoryData[0].t;
+                        trailPoints = [];
+                        clearResults();
+                    }
+                }
+            }
+
+            function resetSim() {
+                isPlaying = false;
+                isCrashed = false;
+                explosionParticles = [];
+                btnPlay.innerHTML = '&#9654;';
+                currentTime = trajectoryData.length > 0 ? trajectoryData[0].t : 0;
+                trailPoints = [];
+                clearResults();
+                updateFromTime(currentTime);
+                renderAll();
+            }
+
+            function cycleSpeed() {
+                const speeds = [0.25, 0.5, 1, 2, 5];
+                let idx = speeds.indexOf(playbackSpeed);
+                playbackSpeed = speeds[(idx + 1) % speeds.length];
+                btnSpeed.textContent = playbackSpeed + 'x';
+            }
+
+            // === ANIMATION LOOP ===
+            function animate(ts) {
+                const dt = (ts - lastFrameTime) / 1000;
+                lastFrameTime = ts;
+
+                if (isPlaying && trajectoryData.length > 0) {
+                    currentTime += dt * playbackSpeed;
+
+                    if (currentTime >= duration) {
+                        currentTime = duration;
+                        isPlaying = false;
+                        btnPlay.innerHTML = '&#9654;';
+                        updateFromTime(currentTime);
+                        checkLanding();
+                    }
+
+                    updateFromTime(currentTime);
+                }
+
+                if (isCrashed) {
+                    updateExplosion(dt);
+                }
+
+                renderAll();
+                requestAnimationFrame(animate);
+            }
+
+            // === INTERPOLATION ===
+            function updateFromTime(time) {
+                if (trajectoryData.length === 0) return;
+
+                if (time <= trajectoryData[0].t) {
+                    currentState = { ...trajectoryData[0] };
+                    updateUI();
+                    return;
+                }
+                if (time >= duration) {
+                    currentState = { ...trajectoryData[trajectoryData.length - 1] };
+                    updateUI();
+                    return;
+                }
+
+                // Binary search
+                let lo = 0, hi = trajectoryData.length - 2;
+                while (lo < hi) {
+                    const mid = (lo + hi + 1) >> 1;
+                    if (trajectoryData[mid].t <= time) lo = mid;
+                    else hi = mid - 1;
+                }
+
+                const p1 = trajectoryData[lo];
+                const p2 = trajectoryData[lo + 1];
+                const dt = p2.t - p1.t;
+                const alpha = dt > 1e-9 ? (time - p1.t) / dt : 0;
+
+                currentState = {
+                    t: time,
+                    x: p1.x + alpha * (p2.x - p1.x),
+                    y: p1.y + alpha * (p2.y - p1.y),
+                    vx: p1.vx + alpha * (p2.vx - p1.vx),
+                    vy: p1.vy + alpha * (p2.vy - p1.vy),
+                    theta: p1.theta + alpha * (p2.theta - p1.theta),
+                    F: p1.F + alpha * (p2.F - p1.F),
+                    delta: p1.delta + alpha * (p2.delta - p1.delta)
+                };
+
+                // Record trail
+                if (isPlaying && !isCrashed) {
+                    if (trailPoints.length === 0 || time - trailPoints[trailPoints.length - 1].t > 0.05) {
+                        trailPoints.push({ t: time, x: currentState.x, y: currentState.y });
+                    }
+                }
+
+                // Crash detection
+                if (!isCrashed && currentState.y < PARAMS.d - 2) {
+                    triggerCrash();
+                }
+
+                updateUI();
+            }
+
+            function triggerCrash() {
+                isCrashed = true;
+                isPlaying = false;
+                btnPlay.innerHTML = '&#9654;';
+                impactX = currentState.x;
+                resultBanner.textContent = 'CRASH - MISSION ECHOUEE';
+                resultBanner.className = 'result-banner result-failure';
+                createExplosion(impactX, 0);
+            }
+
+            function createExplosion(x, y) {
+                explosionParticles = [];
+                for (let i = 0; i < 60; i++) {
+                    explosionParticles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 40,
+                        vy: Math.random() * 40 + 5,
+                        life: 1.0,
+                        size: Math.random() * 5 + 2,
+                        hue: Math.random() < 0.7 ? 15 + Math.random() * 30 : 200
+                    });
+                }
+            }
+
+            function updateExplosion(dt) {
+                if (!isCrashed) return;
+                explosionParticles.forEach(p => {
+                    p.x += p.vx * dt;
+                    p.y += p.vy * dt;
+                    p.vy -= 40 * dt;
+                    p.life -= dt * 0.8;
+                    if (p.y < 0) {
+                        p.y = 0;
+                        p.vx *= 0.5;
+                        p.vy *= -0.2;
+                    }
+                });
+                explosionParticles = explosionParticles.filter(p => p.life > 0);
+            }
+
+            function updateUI() {
+                document.getElementById('telX').textContent = currentState.x.toFixed(2) + ' m';
+                document.getElementById('telY').textContent = currentState.y.toFixed(2) + ' m';
+                document.getElementById('telVx').textContent = currentState.vx.toFixed(2) + ' m/s';
+                document.getElementById('telVy').textContent = currentState.vy.toFixed(2) + ' m/s';
+                document.getElementById('telTheta').textContent = currentState.theta.toFixed(4) + ' rad';
+                document.getElementById('telF').textContent = currentState.F.toFixed(0) + ' N';
+                document.getElementById('telDelta').textContent = currentState.delta.toFixed(4) + ' rad';
+
+                timeDisplay.textContent = currentState.t.toFixed(2) + ' / ' + duration.toFixed(2) + ' s';
+                if (duration > 0) {
+                    slider.value = Math.round((currentState.t / duration) * 1000);
+                }
+            }
+
+            // === LANDING CHECK ===
+            function checkLanding() {
+                const s = currentState;
+                const okX = Math.abs(s.x) < 5;
+                const okY = s.y >= 4 && s.y <= 4.5;
+                const okVx = Math.abs(s.vx) < 1;
+                const okVy = Math.abs(s.vy) < 2;
+                const okTh = Math.abs(s.theta) < 0.1;
+                const success = okX && okY && okVx && okVy && okTh;
+
+                resultBanner.textContent = success ? 'ATTERRISSAGE REUSSI' : 'ECHEC DE L\'ATTERRISSAGE';
+                resultBanner.className = 'result-banner ' + (success ? 'result-success' : 'result-failure');
+
+                setCrit('critX', okX, s.x.toFixed(2) + ' m');
+                setCrit('critY', okY, s.y.toFixed(2) + ' m');
+                setCrit('critVx', okVx, s.vx.toFixed(2) + ' m/s');
+                setCrit('critVy', okVy, s.vy.toFixed(2) + ' m/s');
+                setCrit('critTheta', okTh, s.theta.toFixed(4) + ' rad');
+            }
+
+            function setCrit(id, ok, val) {
+                const el = document.getElementById(id);
+                el.textContent = val;
+                el.className = 'crit-val ' + (ok ? 'crit-ok' : 'crit-fail');
+            }
+
+            function clearResults() {
+                resultBanner.className = 'result-banner';
+                resultBanner.style.display = 'none';
+                ['critX', 'critY', 'critVx', 'critVy', 'critTheta'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.innerHTML = '&mdash;';
+                    el.className = 'crit-val crit-pending';
+                });
+            }
+
+            // === RENDER ALL ===
+            function renderAll() {
+                renderScene();
+                drawGraphCursors();
+            }
+
+            // === GET VIEW WITH CAMERA ===
+            function getView() {
+                let view = { ...camera.baseView };
+
+                // Apply zoom
+                const centerX = (view.left + view.right) / 2;
+                const centerY = (view.bottom + view.top) / 2;
+                const width = (view.right - view.left) / camera.zoom;
+                const height = (view.top - view.bottom) / camera.zoom;
+
+                view.left = centerX - width / 2;
+                view.right = centerX + width / 2;
+                view.bottom = centerY - height / 2;
+                view.top = centerY + height / 2;
+
+                // Apply pan
+                view.left += camera.panX;
+                view.right += camera.panX;
+                view.bottom += camera.panY;
+                view.top += camera.panY;
+
+                // If locked, center on rocket
+                if (camera.locked && trajectoryData.length > 0) {
+                    const rocketX = currentState.x;
+                    const rocketY = currentState.y;
+                    const shiftX = rocketX - centerX;
+                    const shiftY = rocketY - centerY;
+                    view.left += shiftX;
+                    view.right += shiftX;
+                    view.bottom += shiftY;
+                    view.top += shiftY;
+                }
+
+                return view;
+            }
+
+            // === SCENE RENDERING ===
+            function renderScene() {
+                const W = canvas.width;
+                const H = canvas.height;
+                ctx.clearRect(0, 0, W, H);
+
+                // Sky gradient
+                const sky = ctx.createLinearGradient(0, 0, 0, H);
+                sky.addColorStop(0, '#050818');
+                sky.addColorStop(0.6, '#0c1529');
+                sky.addColorStop(0.85, '#162040');
+                sky.addColorStop(1, '#1e2d52');
+                ctx.fillStyle = sky;
+                ctx.fillRect(0, 0, W, H);
+
+                // Get view with camera
+                const view = getView();
+                const worldLeft = view.left;
+                const worldRight = view.right;
+                const worldBottom = view.bottom;
+                const worldTop = view.top;
+                const worldW = worldRight - worldLeft;
+                const worldH = worldTop - worldBottom;
+
+                // Use uniform scale to keep aspect ratio
+                const scaleX = W / worldW;
+                const scaleY = H / worldH;
+                const scale = Math.min(scaleX, scaleY);
+
+                // Center offset
+                const offsetX = (W - worldW * scale) / 2;
+                const offsetY = (H - worldH * scale) / 2;
+
+                function toSX(wx) { return offsetX + (wx - worldLeft) * scale; }
+                function toSY(wy) { return H - offsetY - (wy - worldBottom) * scale; }
+
+                // Ground
+                const groundSY = toSY(0);
+                ctx.fillStyle = '#1a2744';
+                ctx.fillRect(0, groundSY, W, Math.max(0, H - groundSY));
+
+                // Ground line
+                ctx.strokeStyle = '#3b5278';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, groundSY);
+                ctx.lineTo(W, groundSY);
+                ctx.stroke();
+
+                // Adaptive Grid step
+                const step = worldW > 200 ? 50 : worldW > 100 ? 20 : 10;
+
+                // Under-ground background
+                ctx.fillStyle = '#0a101f';
+                ctx.fillRect(0, groundSY, W, H - groundSY);
+
+                // Ground Line (y=0)
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, groundSY);
+                ctx.lineTo(W, groundSY);
+                ctx.stroke();
+
+                // Ground pattern
+                ctx.strokeStyle = '#2a3e5e';
+                ctx.lineWidth = 1;
+                for (let wx = Math.ceil(worldLeft / step) * step; wx <= worldRight; wx += step) {
+                    const sx = toSX(wx);
+                    ctx.beginPath();
+                    ctx.moveTo(sx, groundSY);
+                    ctx.lineTo(sx, groundSY + 6);
+                    ctx.stroke();
+                }
+
+                // Grid lines (vertical, in world coords)
+                ctx.strokeStyle = 'rgba(59, 82, 120, 0.15)';
+                ctx.lineWidth = 1;
+                for (let wx = Math.ceil(worldLeft / step) * step; wx <= worldRight; wx += step) {
+                    const sx = toSX(wx);
+                    ctx.beginPath();
+                    ctx.moveTo(sx, 0);
+                    ctx.lineTo(sx, groundSY);
+                    ctx.stroke();
+                }
+                for (let wy = Math.ceil(worldBottom / step) * step; wy <= worldTop; wy += step) {
+                    if (wy < 0) continue;
+                    const sy = toSY(wy);
+                    ctx.beginPath();
+                    ctx.moveTo(0, sy);
+                    ctx.lineTo(W, sy);
+                    ctx.stroke();
+                }
+
+                // Altitude labels
+                ctx.fillStyle = 'rgba(107, 114, 128, 0.6)';
+                ctx.font = '10px JetBrains Mono, monospace';
+                ctx.textAlign = 'left';
+                for (let wy = Math.ceil(worldBottom / step) * step; wy <= worldTop; wy += step) {
+                    if (wy < 0) continue;
+                    ctx.fillText(wy + 'm', toSX(worldLeft) + 4, toSY(wy) - 3);
+                }
+                // X labels
+                ctx.textAlign = 'center';
+                for (let wx = Math.ceil(worldLeft / step) * step; wx <= worldRight; wx += step) {
+                    ctx.fillText(wx + 'm', toSX(wx), groundSY + 18);
+                }
+
+                // Landing target zone: x in [-5, 5]
+                ctx.fillStyle = 'rgba(34, 197, 94, 0.12)';
+                ctx.fillRect(toSX(-5), groundSY - 2, 10 * scale, 4);
+                ctx.strokeStyle = 'rgba(34, 197, 94, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(toSX(-5), groundSY - 10);
+                ctx.lineTo(toSX(-5), groundSY + 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(toSX(5), groundSY - 10);
+                ctx.lineTo(toSX(5), groundSY + 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Landing pad
+                ctx.fillStyle = 'rgba(34, 197, 94, 0.6)';
+                ctx.fillRect(toSX(-3), groundSY, 6 * scale, 3);
+
+                // Target cross
+                ctx.strokeStyle = 'rgba(34, 197, 94, 0.5)';
+                ctx.lineWidth = 1;
+                const cx0 = toSX(0);
+                ctx.beginPath();
+                ctx.moveTo(cx0 - 6, groundSY - 6);
+                ctx.lineTo(cx0 + 6, groundSY - 6);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(cx0, groundSY - 12);
+                ctx.lineTo(cx0, groundSY);
+                ctx.stroke();
+
+                // Trail
+                if (trailPoints.length > 1) {
+                    ctx.lineWidth = 2;
+                    for (let i = 1; i < trailPoints.length; i++) {
+                        const progress = i / trailPoints.length;
+                        ctx.strokeStyle = `rgba(249, 115, 22, ${0.1 + 0.5 * progress})`;
+                        ctx.beginPath();
+                        ctx.moveTo(toSX(trailPoints[i - 1].x), toSY(trailPoints[i - 1].y));
+                        ctx.lineTo(toSX(trailPoints[i].x), toSY(trailPoints[i].y));
+                        ctx.stroke();
+                    }
+                    // Glow at tip
+                    const last = trailPoints[trailPoints.length - 1];
+                    const grd = ctx.createRadialGradient(toSX(last.x), toSY(last.y), 0, toSX(last.x), toSY(last.y), 8);
+                    grd.addColorStop(0, 'rgba(249,115,22,0.4)');
+                    grd.addColorStop(1, 'transparent');
+                    ctx.fillStyle = grd;
+                    ctx.beginPath();
+                    ctx.arc(toSX(last.x), toSY(last.y), 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Also draw full past trajectory faintly from data
+                if (trajectoryData.length > 1) {
+                    ctx.strokeStyle = 'rgba(249, 115, 22, 0.08)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(toSX(trajectoryData[0].x), toSY(trajectoryData[0].y));
+                    for (let i = 1; i < trajectoryData.length; i++) {
+                        if (trajectoryData[i].t > currentTime + 0.01) break;
+                        ctx.lineTo(toSX(trajectoryData[i].x), toSY(trajectoryData[i].y));
+                    }
+                    ctx.stroke();
+                }
+
+                // === ROCKET ===
+                if (!isCrashed) {
+                    const rx = toSX(currentState.x);
+                    const ry = toSY(currentState.y);
+
+                    ctx.save();
+                    // Clip to ground (don't show rocket below ground)
+                    ctx.beginPath();
+                    ctx.rect(0, 0, W, groundSY + 2);
+                    ctx.clip();
+
+                    ctx.translate(rx, ry);
+                    ctx.rotate(-currentState.theta);
+                    drawRocket(ctx, currentState.F, currentState.delta, scale);
+                    ctx.restore();
+
+                    // Telemetry on canvas
+                    ctx.fillStyle = 'rgba(249, 115, 22, 0.8)';
+                    ctx.font = '11px JetBrains Mono, monospace';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('alt: ' + currentState.y.toFixed(1) + ' m', rx + 30, ry - 10);
+                    ctx.fillText('vel: ' + Math.sqrt(currentState.vx ** 2 + currentState.vy ** 2).toFixed(1) + ' m/s', rx + 30, ry + 4);
+                }
+
+                // === EXPLOSION ===
+                if (isCrashed) {
+                    explosionParticles.forEach(p => {
+                        const sx = toSX(p.x);
+                        const sy = toSY(p.y);
+                        const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, p.size * 2);
+                        grad.addColorStop(0, `hsla(${p.hue}, 100%, 60%, ${p.life})`);
+                        grad.addColorStop(1, `hsla(${p.hue}, 100%, 40%, 0)`);
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, p.size * 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+            }
+
+            function drawRocket(ctx, thrust, delta, worldScale) {
+                const d_px = PARAMS.d * worldScale;
+                const nozzleY = d_px * 0.65;  // Raised by 1.5x nozzle height
+                const feetY = d_px;
+                const bodyTop = -d_px * 0.8;
+                const bodyBot = d_px * 0.7;
+                const bodyH = bodyBot - bodyTop;
+                const bodyW = d_px * 0.25;
+                const halfW = bodyW / 2;
+                const noseH = d_px * 0.3;
+                const finH = d_px * 0.25;
+                const finW = d_px * 0.18;
+
+                // === INDICATORS (Dashed lines from CG) ===
+                ctx.save();
+                ctx.setLineDash([4, 4]);
+                ctx.lineWidth = 1;
+
+                // Theta Reference (Vertical)
+                ctx.save();
+                ctx.rotate(currentState.theta);
+                ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, -d_px * 1.5);
+                ctx.stroke();
+                ctx.restore();
+
+                // Rocket Axis (Top)
+                ctx.strokeStyle = 'rgba(168, 85, 247, 0.6)';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, -d_px * 1.5);
+                ctx.stroke();
+
+                // Rocket Axis (Bottom - for delta ref)
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, d_px * 1.5);
+                ctx.stroke();
+
+                // Delta Direction (Poussée)
+                ctx.save();
+                ctx.translate(0, nozzleY);
+                ctx.rotate(delta);
+                ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(0, d_px * 0.8);
+                ctx.stroke();
+                ctx.restore();
+
+                ctx.restore();
+
+                // Engine nozzle (drawn first to be in background)
+                ctx.save();
+                ctx.translate(0, nozzleY);
+                ctx.rotate(delta);
+                const nzW = Math.max(3, halfW * 0.6);
+                const nzH = Math.max(5, d_px * 0.18);
+                ctx.fillStyle = '#374151';
+                ctx.beginPath();
+                ctx.moveTo(-nzW, 0);
+                ctx.lineTo(-nzW - 2, nzH);
+                ctx.lineTo(nzW + 2, nzH);
+                ctx.lineTo(nzW, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                // Flame
+                if (thrust > 100) {
+                    const flameIntensity = Math.min(thrust / PARAMS.Fmax, 1.0);
+                    const flameLen = d_px * 0.3 + d_px * 1.2 * flameIntensity;
+                    const flicker = Math.random() * d_px * 0.15;
+                    const fW = nzW + 2;
+                    const outerGrad = ctx.createLinearGradient(0, nzH, 0, nzH + flameLen + flicker);
+                    outerGrad.addColorStop(0, `rgba(249, 115, 22, ${0.8 * flameIntensity})`);
+                    outerGrad.addColorStop(0.4, `rgba(239, 68, 68, ${0.6 * flameIntensity})`);
+                    outerGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                    ctx.fillStyle = outerGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(-fW, nzH);
+                    ctx.quadraticCurveTo(-fW * 0.6 - Math.random() * 2, nzH + flameLen * 0.5, 0, nzH + flameLen + flicker);
+                    ctx.quadraticCurveTo(fW * 0.6 + Math.random() * 2, nzH + flameLen * 0.5, fW, nzH);
+                    ctx.closePath();
+                    ctx.fill();
+                    const innerLen = flameLen * 0.5;
+                    const innerGrad = ctx.createLinearGradient(0, nzH, 0, nzH + innerLen);
+                    innerGrad.addColorStop(0, `rgba(255, 255, 255, ${0.9 * flameIntensity})`);
+                    innerGrad.addColorStop(0.5, `rgba(251, 191, 36, ${0.6 * flameIntensity})`);
+                    innerGrad.addColorStop(1, 'rgba(249, 115, 22, 0)');
+                    ctx.fillStyle = innerGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(-fW * 0.5, nzH);
+                    ctx.quadraticCurveTo(-1, nzH + innerLen * 0.5, 0, nzH + innerLen + Math.random() * 3);
+                    ctx.quadraticCurveTo(1, nzH + innerLen * 0.5, fW * 0.5, nzH);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Body
+                ctx.fillStyle = '#d1d5db';
+                ctx.beginPath();
+                ctx.roundRect(-halfW, bodyTop, bodyW, bodyH, 2);
+                ctx.fill();
+
+                // Stripe accent
+                ctx.fillStyle = '#f97316';
+                ctx.fillRect(-halfW, bodyTop + bodyH * 0.15, bodyW, Math.max(2, bodyH * 0.06));
+
+                // Nose cone
+                ctx.fillStyle = '#e5e7eb';
+                ctx.beginPath();
+                ctx.moveTo(-halfW, bodyTop);
+                ctx.lineTo(0, bodyTop - noseH);
+                ctx.lineTo(halfW, bodyTop);
+                ctx.closePath();
+                ctx.fill();
+
+                // Nose tip
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(-2, bodyTop - noseH + 4);
+                ctx.lineTo(0, bodyTop - noseH);
+                ctx.lineTo(2, bodyTop - noseH + 4);
+                ctx.closePath();
+                ctx.fill();
+
+                // Fins
+                ctx.fillStyle = '#6b7280';
+                ctx.beginPath();
+                ctx.moveTo(-halfW, bodyBot - finH);
+                ctx.lineTo(-halfW - finW, bodyBot + 2);
+                ctx.lineTo(-halfW, bodyBot);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(halfW, bodyBot - finH);
+                ctx.lineTo(halfW + finW, bodyBot + 2);
+                ctx.lineTo(halfW, bodyBot);
+                ctx.closePath();
+                ctx.fill();
+
+                // Landing legs
+                const legAttachY = bodyBot - finH * 0.5;
+                const legSpreadX = halfW + d_px * 0.25;
+                ctx.strokeStyle = '#9ca3af';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-halfW, legAttachY);
+                ctx.lineTo(-legSpreadX, feetY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-legSpreadX - 2, feetY);
+                ctx.lineTo(-legSpreadX + 3, feetY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(halfW, legAttachY);
+                ctx.lineTo(legSpreadX, feetY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(legSpreadX - 3, feetY);
+                ctx.lineTo(legSpreadX + 2, feetY);
+                ctx.stroke();
+
+                // CG dot
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.8)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.5)';
+                ctx.font = '8px JetBrains Mono, monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText('CG', 4, -2);
+
+                // Theta angle indicator
+                if (Math.abs(currentState.theta) > 0.0001) {
+                    ctx.save();
+                    const arcR = d_px * 1.2;
+                    ctx.strokeStyle = 'rgba(168, 85, 247, 0.7)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    const startA = -Math.PI / 2;
+                    ctx.arc(0, 0, arcR, startA, startA + currentState.theta, currentState.theta < 0);
+                    ctx.stroke();
+
+                    // Theta label
+                    ctx.fillStyle = 'rgba(168, 85, 247, 0.9)';
+                    ctx.font = 'bold 11px JetBrains Mono, monospace';
+                    ctx.textAlign = 'center';
+                    const la = startA + currentState.theta / 2;
+                    ctx.fillText('\u03B8', Math.cos(la) * (arcR + 12), Math.sin(la) * (arcR + 12) + 4);
+                    ctx.restore();
+                }
+
+                // Delta angle indicator
+                if (Math.abs(delta) > 0.0001) {
+                    ctx.save();
+                    ctx.translate(0, nozzleY);
+                    const arcR = d_px * 0.6;
+                    ctx.strokeStyle = 'rgba(239, 68, 68, 0.7)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    const startA = Math.PI / 2;
+                    ctx.arc(0, 0, arcR, startA, startA + delta, delta < 0);
+                    ctx.stroke();
+
+                    // Delta label
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
+                    ctx.font = 'bold 11px JetBrains Mono, monospace';
+                    const la = startA + delta / 2;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('\u03B4', Math.cos(la) * (arcR + 12), Math.sin(la) * (arcR + 12) + 4);
+                    ctx.restore();
+                }
+            }
+
+            function getNiceScale(min, max, maxSteps) {
+                const range = max - min || 1;
+                const roughStep = range / maxSteps;
+                const exponent = Math.floor(Math.log10(roughStep));
+                const fraction = roughStep / Math.pow(10, exponent);
+                let niceFraction;
+                if (fraction < 1.5) niceFraction = 1;
+                else if (fraction < 3) niceFraction = 2;
+                else if (fraction < 7) niceFraction = 5;
+                else niceFraction = 10;
+
+                const step = niceFraction * Math.pow(10, exponent);
+                const niceMin = Math.floor(min / step) * step;
+                const niceMax = Math.ceil(max / step) * step;
+
+                const ticks = [];
+                for (let v = niceMin; v <= niceMax + step * 0.1; v += step) {
+                    ticks.push(v);
+                }
+                return { ticks, min: niceMin, max: niceMax };
+            }
+
+            // === GRAPH DRAWING ===
+            function drawAllGraphs() {
+                if (trajectoryData.length === 0) return;
+
+                graphConfigs.forEach(conf => {
+                    const cvs = document.getElementById(conf.id);
+                    if (!cvs) return;
+
+                    const gc = setupCanvas(cvs, 800, 160);
+                    const w = 800;
+                    const h = 160;
+
+                    gc.clearRect(0, 0, w, h);
+
+                    // Background
+                    gc.fillStyle = '#0d1117';
+                    gc.fillRect(0, 0, w, h);
+
+                    const pad = { left: 70, right: 15, top: 20, bottom: 25 };
+                    const drawW = w - pad.left - pad.right;
+                    const drawH = h - pad.top - pad.bottom;
+
+                    // Data range
+                    let rawMin = Infinity, rawMax = -Infinity;
+                    trajectoryData.forEach(d => {
+                        const v = d[conf.key];
+                        if (v < rawMin) rawMin = v;
+                        if (v > rawMax) rawMax = v;
+                    });
+
+                    // Determine nice scale
+                    const maxSteps = drawH < 100 ? 3 : 5;
+                    const scale = getNiceScale(rawMin, rawMax, maxSteps);
+                    const { ticks, min, max } = scale;
+
+                    const tStart = trajectoryData[0].t;
+                    const tEnd = trajectoryData[trajectoryData.length - 1].t;
+                    const tRange = tEnd - tStart || 1;
+
+                    const mapX = t => pad.left + ((t - tStart) / tRange) * drawW;
+                    const mapY = v => pad.top + drawH - ((v - min) / (max - min)) * drawH;
+
+                    // Grid
+                    gc.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                    gc.lineWidth = 1;
+
+                    // Horizontal grid
+                    gc.font = '10px "JetBrains Mono", monospace';
+                    gc.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                    gc.textAlign = 'right';
+                    ticks.forEach(val => {
+                        const sy = mapY(val);
+                        if (sy < pad.top || sy > pad.top + drawH) return;
+
+                        gc.beginPath();
+                        gc.setLineDash([2, 4]);
+                        gc.moveTo(pad.left, sy);
+                        gc.lineTo(w - pad.right, sy);
+                        gc.stroke();
+                        gc.setLineDash([]);
+
+                        let label;
+                        if (Math.abs(val) >= 1000) label = (val / 1000).toFixed(1) + 'k';
+                        else if (Math.abs(val) > 0 && Math.abs(val) < 0.01) label = val.toExponential(0);
+                        else label = val.toLocaleString(undefined, { maximumFractionDigits: 2 });
+                        gc.fillText(label, pad.left - 8, sy + 3);
+                    });
+
+                    // Vertical grid (time)
+                    gc.textAlign = 'center';
+                    const tStep = tRange > 15 ? 5 : tRange > 5 ? 2 : 1;
+                    for (let t = Math.ceil(tStart / tStep) * tStep; t <= tEnd; t += tStep) {
+                        const sx = mapX(t);
+                        gc.beginPath();
+                        gc.setLineDash([2, 4]);
+                        gc.moveTo(sx, pad.top);
+                        gc.lineTo(sx, pad.top + drawH);
+                        gc.stroke();
+                        gc.setLineDash([]);
+                        gc.fillText(t + 's', sx, h - 8);
+                    }
+
+                    // Data line
+                    gc.beginPath();
+                    gc.lineWidth = 2.5;
+                    gc.strokeStyle = conf.color;
+                    gc.lineJoin = 'round';
+                    gc.lineCap = 'round';
+                    trajectoryData.forEach((d, i) => {
+                        const px = mapX(d.t);
+                        const py = mapY(d[conf.key]);
+                        if (i === 0) gc.moveTo(px, py);
+                        else gc.lineTo(px, py);
+                    });
+                    gc.stroke();
+
+                    // Gradient Fill
+                    const p = new Path2D();
+                    p.moveTo(mapX(tStart), pad.top + drawH);
+                    trajectoryData.forEach(d => p.lineTo(mapX(d.t), mapY(d[conf.key])));
+                    p.lineTo(mapX(tEnd), pad.top + drawH);
+                    p.closePath();
+
+                    const grad = gc.createLinearGradient(0, pad.top, 0, pad.top + drawH);
+                    const rgb = conf.color.match(/[A-Za-z0-9]{2}/g).map(x => parseInt(x, 16));
+                    grad.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.3)`);
+                    grad.addColorStop(1, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0)`);
+                    gc.fillStyle = grad;
+                    gc.fill(p);
+
+                    const dpr = window.devicePixelRatio || 1;
+                    graphCache[conf.id] = {
+                        image: gc.getImageData(0, 0, w * dpr, h * dpr),
+                        mapX, mapY, pad, w, h, conf, tStart, tEnd, drawH, dpr
+                    };
+                });
+            }
+
+            function drawGraphCursors() {
+                if (trajectoryData.length === 0) return;
+
+                graphConfigs.forEach(conf => {
+                    const cvs = document.getElementById(conf.id);
+                    const cache = graphCache[conf.id];
+                    if (!cvs || !cache) return;
+                    const gc = cvs.getContext('2d');
+
+                    gc.putImageData(cache.image, 0, 0);
+                    if (currentTime < cache.tStart || currentTime > cache.tEnd) return;
+
+                    const sx = cache.mapX(currentTime);
+                    const val = currentState[conf.key];
+                    const sy = cache.mapY(val);
+
+                    // Vertical Cursor Line
+                    gc.strokeStyle = 'white';
+                    gc.lineWidth = 1;
+                    gc.beginPath();
+                    gc.moveTo(sx, cache.pad.top);
+                    gc.lineTo(sx, cache.pad.top + cache.drawH);
+                    gc.stroke();
+
+                    // Marker Dot
+                    const rgb = cache.conf.color.match(/[A-Za-z0-9]{2}/g).map(x => parseInt(x, 16));
+                    const glow = gc.createRadialGradient(sx, sy, 0, sx, sy, 12);
+                    glow.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.8)`);
+                    glow.addColorStop(1, 'transparent');
+                    gc.fillStyle = glow;
+                    gc.beginPath();
+                    gc.arc(sx, sy, 12, 0, Math.PI * 2);
+                    gc.fill();
+
+                    gc.fillStyle = 'white';
+                    gc.beginPath();
+                    gc.arc(sx, sy, 4, 0, Math.PI * 2);
+                    gc.fill();
+                    gc.strokeStyle = cache.conf.color;
+                    gc.lineWidth = 2;
+                    gc.stroke();
+
+                    // Tooltip
+                    const valText = (Math.abs(val) >= 1000 ? (val / 1000).toFixed(2) + 'k' : val.toFixed(3)) + ' ' + cache.conf.unit;
+                    gc.font = 'bold 11px "JetBrains Mono", monospace';
+                    const tw = gc.measureText(valText).width + 12;
+                    const tx = Math.min(Math.max(sx + 10, cache.pad.left), cache.w - tw - 10);
+                    const ty = Math.min(Math.max(sy - 25, cache.pad.top), cache.h - 30);
+
+                    gc.fillStyle = 'rgba(17, 24, 39, 0.9)';
+                    gc.strokeStyle = cache.conf.color;
+                    gc.lineWidth = 1;
+                    gc.beginPath();
+                    gc.roundRect(tx, ty, tw, 20, 4);
+                    gc.fill();
+                    gc.stroke();
+
+                    gc.fillStyle = 'white';
+                    gc.textAlign = 'left';
+                    gc.fillText(valText, tx + 6, ty + 14);
+                });
+            }
+
+        })();
+    </script>
+
+    <!-- Initialize KaTeX auto-render -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false }
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+
+</html>
