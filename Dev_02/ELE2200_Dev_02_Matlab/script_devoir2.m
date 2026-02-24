@@ -93,8 +93,7 @@ vx0    = -0.1;% Vitesse initiale x (m/s)
 vy0    = 0.3;% Vitesse initiale y (m/s)
 
 % Simulation des deux modèles (conditions initiales à compléter dans Simulink !)
-data_simp = sim("modele_simplifie.slx");
-data_cpl = sim("modele_complet.slx");
+data_simp = sim("modele_simplifie.slx");data_cpl = sim("modele_complet.slx");
 
 % À COMPLÉTER : Extraire les données et tracer la comparaison
 

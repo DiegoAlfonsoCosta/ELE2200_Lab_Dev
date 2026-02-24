@@ -177,16 +177,45 @@
 
     \section{Question 3: Comparaison du modèle réduit avec le modèle complet}
 
+    \subsection{Réponses à un échelon unitaire de la consigne $x_{ref}$}
+
+    %todo presentation tableau
+
+    La table \ref{fig:q3a} présente les réponses en $x$obtenus pour les deux modèles en réponse à un échelon unitaire de la consigne $x_{ref}$.
+
+
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\linewidth]{FigureMatlab/q_3_a}
         \caption{Réponses à un échelon unitaire de la consigne $x_{ref}$}
+        \label{fig:q3a}
     \end{figure}
+    % todo comparaison
+
+    %todo commentaires warning
+
+    \subsection{Réponses à une consigne d'atterrissage}
+%    todo persentation tableau
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\linewidth]{FigureMatlab/q_3_c}
         \caption{Trajectoires des deux modèles et les trajectoires de référence}
     \end{figure}
+    Les deux modèles suivent correctement la consigne d’atterrissage, avec des comportements dynamiques similaires.
+    Toutefois, le modèle complet présente des écarts légèrement plus importants que le modèle simplifié, en raison
+    de la prise en compte des effets non linéaires.
+
+    Numériquement, on calcule la valeur maximale de l’angle de tangage sur l’intervalle $0 \leq t \leq T_{\text{att}}$ :
+    \[
+        \max_{0 \leq t \leq T_{\text{att}}} \lvert \theta(t) \rvert.
+    \]
+
+    FAIRE lE ACTUAL CALCU
+
+    Pour les deux modèles, cette valeur maximale reste inférieure à $15^\circ$.
+    L’hypothèse des petits angles, $\lvert \theta \rvert \leq 15^\circ$, est donc respectée sur tout l’intervalle
+    $0 \leq t \leq T_{\text{att}}$.
+
     %\clearpage
     %\bibliography{main}
     %\bibliographystyle{plain}
