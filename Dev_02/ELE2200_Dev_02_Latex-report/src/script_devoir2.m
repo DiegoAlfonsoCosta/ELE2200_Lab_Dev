@@ -30,19 +30,21 @@ fprintf('===================== QUESTION 1 =====================\n\n');
 
 % À COMPLÉTER : Calculer la fonction de transfert H_theta(s)
 % H_theta = ...
-
 Kpo = 39.5;
 Kio = 0.6;
 Kdo = 13.4;
-[A, B, C, D] = linmod('Schema_Fonctionnel_angle')
-sys = ss(A,B,C,D)
-H = tf(sys)
-display(H)
 
+[A, B, C, D] = linmod('Schema_Fonctionnel_angle');
+sys = ss(A,B,C,D);
+H = tf(sys);
+display(H);
+
+pole(H)
 % ---- Q1(b) : Réponse indicielle ----
-
 % À COMPLÉTER : Tracer la réponse indicielle de theta sur 3 secondes
 
+
+%Reponse indicielle a l'aide du schema fonctionnel de theta
 figure(1)
 out1 = sim('Schema_Fonctionnel_angle.slx','Solver','ode1','FixedStep','0.01','StopTime','3');
 plot(out1.Y1(:,1), out1.Y1(:,2))
@@ -50,17 +52,18 @@ grid on
 hold on
 plot(out1.Y1(:,1), out1.Y1(:,3))
 titre = 'Graphe de $\theta_{ref}(t)$ et de $\theta(t)$';
-title(titre, 'Interpreter','latex')
+title(titre, 'Interpreter','latex','FontSize',16)
 abscisse = 'Temps (secondes)';
-xlabel(abscisse,'Interpreter', 'latex')
+xlabel(abscisse,'Interpreter', 'latex','FontSize',12)
 ordonnee = '$\theta$ (en radians)';
-ylabel(ordonnee,'Interpreter','latex')
+ylabel(ordonnee,'Interpreter','latex','FontSize',12)
 xlim([0,3])
 legende1 = '$\theta_{ref}(t)$';
 legende2 = '$\theta$(t)';
-legend(legende1, legende2,'Interpreter','latex')
+legend(legende1, legende2,'Interpreter','latex','FontSize',16)
 hold off
-
+print -dpng script_devoir2.png
+print -dpng -s Schema_Fonctionnel_angle.png
 %% ====================================================================
 %  QUESTION 2 — Contrôle de la position en x et y
 %  ====================================================================
@@ -71,28 +74,54 @@ fprintf('===================== QUESTION 2 =====================\n\n');
 
 % À COMPLÉTER : Calculer la fonction de transfert H_y(s)
 % H_y = ...
-
 Kpy = 75000;
 Kiy = 125000;
 Kdy = 15000;
 
-[E, F, G, J] = linmod('Question2');
+[E, F, G, J] = linmod('Schema_Y_Q2');
 sys = ss(E,F,G,J);
 Y = tf(sys);
 display(Y);
-
+stepinfo(sys)
+print -dpng -s Schema_Y_Q2.png
 % ---- Q2(b) : FT boucle x : X(s)/X_ref(s) ----
 
 % À COMPLÉTER : Calculer la fonction de transfert H_x(s)
 % H_x = ...
+Kpx = -0.440;
+Kix = -0.176;
+Kdx = -0.367;
 
-
+[A_s, B_s, C_s, D_s] = linmod('Schema_X_Q2b');
+sys2 = ss(A_s,B_s,C_s,D_s);
+X = tf(sys2);
+display(X);
+stepinfo(sys2)
+print -dpng -s Schema_X_Q2b.png
+print -dpng -s Algebre_X.png
 % ---- Q2(c) : Réponses indicielles ----
 
 % À COMPLÉTER : Tracer les réponses indicielles de x et y sur 10 secondes
 % et comparer les deux réponses
-
-
+figure(2)
+out2 = sim('Question2.slx','Solver','ode5','FixedStep','0.01','StopTime','10');
+plot(out2.YQ2(:,1), out2.YQ2(:,2))
+grid on
+hold on
+plot(out2.YQ2(:,1), out2.YQ2(:,3))
+titre1 = 'Graphe de x(t) et de y(t) pour une entrée échelon unité';
+title(titre, 'Interpreter','latex', 'FontSize',14)
+abscisse1 = 'Temps (secondes)';
+xlabel(abscisse1,'Interpreter', 'latex','FontSize',12)
+ordonnee1 = 'x et y (en mètres)';
+ylabel(ordonnee1,'Interpreter','latex','FontSize',12)
+xlim([0,10])
+legende3 = '$x(t)$';
+legende4 = '$y(t)$';
+legend(legende3, legende4,'Interpreter','latex', 'Fontsize',16)
+hold off
+print -dpng -s Question2.png
+print -dpng script_devoirLateX.png
 %% ====================================================================
 %  QUESTION 3 — Modèle réduit vs modèle complet
 %  ====================================================================

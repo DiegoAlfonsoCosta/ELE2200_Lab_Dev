@@ -57,15 +57,16 @@
         \vspace{0.5cm}
         {\Large Département de génie électrique\par}
         \vspace{2cm}
-        {\Huge \textbf{SIGLE -- NOM DE COURS}\par}
+        {\Huge \textbf{ELE2200 --Système et Simulation}\par}
         \vspace{0.5cm}
-        {\Huge \textbf{TITRE DU DEVOIR (Hiver 2026)}\par}
+        {\Huge \textbf{Devoir 2 (Hiver 2026)}\par}
         \vspace{2cm}
 
         \begin{flushleft}
             Costa Diego Alfonso\hfill Matricule : 2374165\\
+            Gagnon Louis\hfill Matricule : 2295595\\
             \vspace{0.8cm}
-            \textbf{Date de remise :} DATE DE REMISE\\
+            \textbf{Date de remise :} 24 février 2026\\
         \end{flushleft}
 
         \vfill
@@ -77,11 +78,13 @@
     \clearpage
 
     \section{Introduction}
-    \section{Question 1: Asservissement de l'angle $\theta$}
-    a) Cacluler la fonction de transfert littérale $\frac{\Theta(s)}{\Theta_{ref}(s)}$ \newline
+    Ce travail porte sur la modélisation et l'analyse d'un système de commande pour fusée. Nous étudions les boucles d'asservissement de l'angle de tangage $\theta$ ainsi que des positions horizontales $x$ et $y$, en déterminant leurs fonctions de transfert respectives et en caractérisant leurs réponses dynamiques. L'objectif est de comparer le modèle linéarisé au modèle complet non linéaire afin de valider les hypothèses de linéarisation et d'évaluer la performance du système lors d'une trajectoire d'atterrissage.
+
+    \section{Question 1: Asservissement de l'angle \texorpdfstring{$\theta$}{theta}}
+     a) Calculer la fonction de transfert littérale $\frac{\Theta(s)}{\Theta_{ref}(s)}$ \newline
     Il y a plusieurs approches possibles pour trouver la fonction de transfert $\frac{\Theta(s)}{\Theta_{ref}(s)}$. On peut utiliser les fonctions de MATLAB pour extraire le modèle d'état pour ensuite en déduire la fonction de transfert caractérisant le système.
 
-    \lstinputlisting[language=Matlab,linerange={34-40},inputencoding=utf8/latin1]{Script_devoir2.m}
+    \lstinputlisting[language=Matlab,linerange={33-40},inputencoding=utf8/latin1]{script_devoir2.m}
 
     En exécutant les lignes ci-dessus, on obtient la fonction de transfert suivante: \newline
     \begin{center}
@@ -113,14 +116,14 @@
         \caption{Étape 4}
     \end{figure}
 
-    La forme finale du diagrame fonctionnel de $\theta$ est une boucle de rétroaction négative simple dont la fonction de transfert est: \newline
+    La forme finale du diagramme fonctionnel de $\theta$ est une boucle de rétroaction négative simple dont la fonction de transfert est: \newline
 
     \begin{center}
-        \LARGE \text{$\frac{\Theta(s)}{\Theta_{ref}(s)}=\frac{\frac{K_{i\theta}+K_{p\theta}s}{s(s^2+K_{d\theta}s)}}{1+\frac{K_{i\theta}+K_{p\theta}s}{s(s^2+K_{d\theta}s)}}=\frac{K_{i\theta}+K_{p\theta}s}{s(s^2+K_{d\theta})+K_{i\theta}+K_{p\theta}s}$}
+        \LARGE \text{$\frac{\Theta(s)}{\Theta_{ref}(s)}=\frac{\frac{K_{i\theta}+K_{p\theta}s}{s(s^2+K_{d\theta}s)}}{1+\frac{K_{i\theta}+K_{p\theta}s}{s(s^2+K_{d\theta}s)}}=\frac{K_{i\theta}+K_{p\theta}s}{s(s^2+K_{d\theta}s)+K_{i\theta}+K_{p\theta}s}$}
     \end{center}
 
     \begin{center}
-        $\therefore \LARGE \text{$\frac{\Theta(s)}{\Theta_{ref}(s)}=\frac{K_{i\theta}+K_{p\theta}s}{s^3+K_{d\theta}s^2+K_{p\theta}s+K_{i\theta}}$}$
+        {\large $\boxed{\therefore \frac{\Theta(s)}{\Theta_{ref}(s)}=\frac{K_{i\theta}+K_{p\theta}s}{s^3+K_{d\theta}s^2+K_{p\theta}s+K_{i\theta}}}$}
     \end{center}
 
     On voit qu'en remplaçant les valeurs de $K_{p\theta}$, $K_{i\theta}$ et $K_{d\theta}$ par leurs valeurs respectives de 39.5, 0.6 et 13.4, on obtient la même fonction de transfert que celle trouvée avec MATLAB: \newline
@@ -140,8 +143,8 @@
     \end{figure}
     Ensuite, nous avons écrit le script MATLAB suivant dans le fichier \text{script-devoir2.m}: \newline
 
-    \lstinputlisting[language=Matlab,linerange={45-61},inputencoding=utf8/latin1]{Script_devoir2.m}
-
+    \lstinputlisting[language=Matlab,linerange={45-61},inputencoding=utf8/latin1]{script_devoir2.m}
+    \newpage
     En exécutant le code ci-dessus, on obtient le graphe suivant: \newline
 
     \begin{figure}[H]
@@ -150,11 +153,12 @@
         \caption{Graphe de $\theta(t)$ et $\theta_{ref}(t)$}
     \end{figure}
 
-    La réponse $\theta(t)$ à l'entrée échelon unité $\theta_{ref}(t)$ a bel et bien le comportement attendu. (Insérer les explications ici) \newline
+    La réponse $\theta(t)$ à l'entrée échelon unité $\theta_{ref}(t)$ a bel et bien le comportement attendu. On s'attendait à ce que le système soit stable en régime permanent car les pôles de la fonction de transfert sont tous du côté gauche du plan complexe. En utilisant la fonction "pole()" et en y mettant la fonction de transfert déclarée auparavant en argument, on obtient les valeurs  -9.0359, -4.3488 et -0.0153 qui sont toutes dans la partie gauche du plan complexe. Puisque l'entrée est un échelon unité et que le critère de stabilité est respecté (pôles), il est normal que la sortie se stabilise vers la forme de l'entrée lorsque le système entre en régime permanent, i.e. que la sortie $\theta(t)$ tende vers 1 lorsque t tend vers l'infini.
+    \newline
 
 
     \section{Question 2: Contrôle de la position en x et y}
-    b) Boucle en commande en y: calculer $\frac{Y(s)}{Y_{ref}(s)}$ \newline
+    a) Boucle en commande en y: calculer $\frac{Y(s)}{Y_{ref}(s)}$ \newline
     Il y a plusieurs approches possibles. On peut le trouver à l'aide de MATLAB et Simulink. D'abord, on effectue le diagramme fonctionnel de la commande en y dans Simulink (identique à celui de la figure 4 de l'énoncé): \newline
 
     \begin{figure}[H]
@@ -162,26 +166,144 @@
         \includegraphics[width=0.8\linewidth]{Diagramme_Y.png}
         \caption{Diagramme fonctionnel de la commande en y}
     \end{figure}
-    Ensuite, on fait exéctuer le script MATLAB suivant: \newline
 
-    %\begin{tikzpicture}
+    Ensuite, on fait exécuter le script MATLAB suivant: \newline
 
-    %\sbEntree{E}
-    %\sbComp*{comp}{E}
-    %\sbRelier[$\theta_{ref}$]{E}{comp}
+    \lstinputlisting[language=Matlab,linerange={77-84},inputencoding=utf8/latin1]{script_devoir2.m}
+    On obtient la fonction de transfert suivante: \newline
+    \begin{center}
+        \LARGE \text{$\frac{Y(s)}{Y_{ref}(s)}=\frac{75s+125}{s^3+15s^2+75s+125}$}
+    \end{center}
+    On peut aussi obtenir la fonction de transfert en faisant de l'algèbre des diagrammes avec le diagramme fonctionnel de la commande en y. \newline
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_Y1.png}
+        \caption{Étape 1}
+    \end{figure}
 
-    %\end{tikzpicture}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_Y2.png}
+        \caption{Étape 2}
+        \label{fig:algebre_y2}
+    \end{figure}
 
-%\lstinputlisting[language=Matlab,inputencoding=utf8/latin1]{Script_devoir2.m}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_Y3.png}
+        \caption{Étape 3}
+    \end{figure}
 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_Y4.png}
+        \caption{Étape 4}
+    \end{figure}
+    La forme à l'étape 4 ci-dessus est celle d'une simple boucle de rétroaction négative dont la fonction de transfert est: \newline
+    \begin{center}
+        \LARGE \text{$\frac{Y(s)}{Y_{ref}(s)}=\frac{\frac{K_{iy}+K_{py}s}{s^2(ms+K_{dy})}}{1+\frac{K_{iy}+K_{py}s}{s^2(ms+K_{dy})}}=\frac{K_{iy}+K_{py}s}{s^2(ms+K_{dy})+K_{iy}+K_{py}s}$} \newline
+        \large \text{$\boxed{\therefore \frac{Y(s)}{Y_{ref}(s)}=\frac{K_{iy}+K_{py}s}{ms^3+K_{dy}s^2+K_{py}s+K_{iy}}}$}
+    \end{center}
+
+    b) Boucle en commande en x: calculer $\frac{X(s)}{X_{ref}(s)}$
+
+    Encore une fois, il existe plusieurs approches. On peut la calculer en utilisant MATLAB et Simulink. D'abord, on fait le diagramme fonctionnel suivant sur Simulink:
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Schema_X_Q2b.png}
+        \caption{Diagramme fonctionnel de la commande en x}
+    \end{figure}
+    On écrit le script suivant sur MATLAB:
+    \lstinputlisting[language=Matlab,linerange={90-97},inputencoding=utf8/latin1]{script_devoir2.m}
+    Puis on obtient la fonction de transfert suivante: \newline
+    \begin{center}
+        \LARGE \text{$\frac{X(s)}{X_{ref}(s)}=\frac{4.316s+1.727}{s^3+3.6s^2+4.316s+1.727}$}
+    \end{center}
+    On peut aussi faire de l'algèbre des diagrammes pour obtenir la fonction de transfert, mais sous forme littérale (i.e. avec les variables $K_{px}$, $K_{ix}$, $K_{dx}$ laissées telles quelles):
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_X1.png}
+        \caption{Étape 1}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_X2.png}
+        \caption{Étape 2}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_X3.png}
+        \caption{Étape 3}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Algebre_X4.png}
+        \caption{Étape 4}
+    \end{figure}
+    Le diagramme ci-dessus correspond à la forme d'un système bouclé simple, en rétroaction négative, dont la fonction de transfert est la suivante: \newline
+
+    \begin{center}
+        {\LARGE $\frac{X(s)}{X_{ref}(s)}=\frac{\frac{-g(K_{ix}+K_{px}s)}{s^2(s-K_{dx}g)}}{1+\frac{-g(K_{ix}+K_{px}s)}{s^2(s-K_{dx}g)}}=\frac{-gK_{ix}-gK_{px}s}{s^3-gK_{dx}s^2-gK_{px}s-gK_{ix}}$}
+    \end{center}
+    \begin{center}
+        {\large $\boxed{\therefore \frac{X(s)}{X_{ref}(s)}=\frac{-gK_{ix}-gK_{px}s}{s^3-gK_{dx}s^2-gK_{px}s-gK_{ix}}}$}
+    \end{center}
+    En remplaçant $K_{px}$, $K_{ix}$, $K_{dx}$ et $g$ par leurs valeurs numériques respectives (i.e. respectivement -0.440, -0.176, -0.367 et 9.81), on retrouve la fonction de transfert trouvée sur MATLAB: \newline
+    \begin{center}
+        {\LARGE $\frac{X(s)}{X_{ref}(s)}=\frac{-(9.81)(-0.176)-(9.81)(-0.440)s}{s^3-(9.81)(-0.367)s^2-(9.81)(-0.440)s-(9.81)(-0.176)}$}
+    \end{center}
+    \begin{center}
+        {\LARGE $=\frac{1.727+4.316s}{s^3+3.6s^2+4.316s+1.727}$}
+    \end{center}
+
+    c) Réponses indicielles $x(t)$ et $y(t)$ \newline \newline
+    On doit tracer les réponses indicielles $x(t)$ et $y(t)$ lorsque les entrées $x_{ref}(t)$ et $y_{ref}(t)$ sont respectivement des échelons unitaires. On effectue le diagramme fonctionnel ci-dessous sur Simulink: \newline
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Diagrammes_X_Y.png}
+        \caption{Diagrammes fonctionnels des boucles en x et y}
+    \end{figure}
+
+    Ensuite, on exécute le script suivant sur MATLAB: \newline
+    \lstinputlisting[language=Matlab,linerange={106-122},inputencoding=utf8/latin1]{script_devoir2.m}
+
+    On obtient le graphe suivant:
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{Graphe_Q2_c.png}
+        \caption{Graphe des positions x(t) et y(t) pour une entrée échelon unité}
+    \end{figure}
+
+    En utilisant la fonction "stepinfo()" de MATLAB (où les arguments des fonctions "linmod(...)" sont des fichiers Simulink), pour chaque boucle (en x et en y):
+    \lstinputlisting[language=Matlab,linerange={77-85},inputencoding=utf8/latin1]{script_devoir2.m}
+    \lstinputlisting[language=Matlab,linerange={91-99},inputencoding=utf8/latin1]{script_devoir2.m}
+    on obtient les résultats suivants: \newline
+    \begin{table}[H]
+        \centering
+        \resizebox{0.8\textwidth}{!}{
+            \begin{tabular}{|c|c|c|}
+                \hline
+                Boucle & Dépassement (\%) & Temps de réponse à 2\% (secondes) \\
+                \hline
+                x & 25 & 6.58 \\
+                \hline
+                y & 25 & 1.58 \\
+                \hline
+            \end{tabular}}
+        \caption{Dépassement et temps de réponse à 2\% pour les boucles en x et en y}
+    \end{table}
+    D'abord, on peut remarquer que les résultats du tableau 1 ci-dessus correspondent au graphe de la figure 18 i.e. le graphe des réponses indicielles $x(t)$ et $y(t)$. En effet, on peut constater que $y(t)$ se stabilise plus rapidement vers 1 que $x(t)$, ce qui concorde avec les résultats du tableau 1. On constate également que le dépassement est de 25\% pour les deux boucles. En effet, on peut voir dans le graphe de la figure 18 que les deux courbes $x(t)$ et $y(t)$ ont bel et bien la même valeur maximale, d'où la valeur de dépassement identique aux deux boucles. En somme, le régime transitoire de $y(t)$ est plus court que celui de $x(t)$. La réponse $y(t)$ atteint le même valeur maximale que la réponse $x(t)$, mais plus rapidement et elle décroit et se stabilise plus rapidement vers 1 (forme de l'entrée, qui est un échelon unité).
 
     \section{Question 3: Comparaison du modèle réduit avec le modèle complet}
 
-    \subsection{Réponses à un échelon unitaire de la consigne $x_{ref}$}
+    \subsection{3.A Réponses à un échelon unitaire de la consigne \texorpdfstring{$x_{ref}$}{x\_ref}}
 
-    %todo presentation tableau
-
-    La table \ref{fig:q3a} présente les réponses en $x$obtenus pour les deux modèles en réponse à un échelon unitaire de la consigne $x_{ref}$.
+    La table \ref{fig:q3a} présente les réponses en $x$ obtenues pour les deux modèles en réponse à un échelon unitaire de la consigne $x_{ref}$.
 
 
     \begin{figure}[H]
@@ -190,17 +312,70 @@
         \caption{Réponses à un échelon unitaire de la consigne $x_{ref}$}
         \label{fig:q3a}
     \end{figure}
-    % todo comparaison
+    Le modèle linéarisé reproduit correctement le régime permanent mais sous-estime le dépassement et la rapidité de la réponse transitoire. Les écarts observés en début de réponse s’expliquent par la présence de non-linéarités dans le modèle complet, non prises en compte dans la linéarisation. Lorsque le système évolue à proximité de l’équilibre, les deux modèles convergent.
 
-    %todo commentaires warning
+    Le \emph{warning} associé à la fonction $\arcsin$ dans le modèle complet s’explique par la valeur initiale très négative du couple moteur $C_m$. L’angle $\delta$ est en effet défini par
+    \[
+        \delta = \arcsin\!\left(\frac{J C_m}{F d}\right),
+    \]
+    fonction qui n’est définie que pour $\left|\frac{J C_m}{F d}\right| \leq 1$.
 
-    \subsection{Réponses à une consigne d'atterrissage}
-%    todo persentation tableau
+    Bien que la position initiale vérifie $x(0)=x_{\mathrm{ref}}(0)$, le suivi de trajectoire ne dépend pas uniquement de la position, mais également de la dynamique imposée par la consigne. La trajectoire de référence $x_{\mathrm{ref}}(t)$ n’est pas constante et impose dès l’instant initial une vitesse et une accélération horizontales non nulles :
+    \[
+        \dot{x}_{\mathrm{ref}}(0) \neq 0,
+        \qquad
+        \ddot{x}_{\mathrm{ref}}(0) \neq 0.
+    \]
+
+    En revanche, le système réel ne possède pas initialement cette dynamique. En particulier, l’accélération horizontale réelle est donnée par
+    \[
+        \ddot{x}(t) = -g\,\theta(t),
+    \]
+    et comme $\theta(0)=0$, on a
+    \[
+        \ddot{x}(0)=0.
+    \]
+
+    Il existe donc, dès le début de la simulation, une erreur de vitesse et surtout une erreur d’accélération entre la trajectoire réelle et la trajectoire de référence, même en l’absence d’erreur de position. Cette incompatibilité dynamique initiale se traduit par un couple moteur $C_m$ d'une valeur très négative lors du régime transitoire initial. Cette valeur conduit à un argument de la fonction $\arcsin$ qui sort de l’intervalle $[-1,1]$, ce qui correspond physiquement à une demande de couple non réalisable. Ce dépassement, bien que bref, suffit à déclencher le \emph{warning}, même si l’angle $\delta$ reste ensuite de faible amplitude.
+
+    Dans ces conditions, les hypothèses de linéarisation ne sont plus strictement vérifiées au début de la simulation. Le modèle linéarisé
+    \[
+        \begin{cases}
+            \ddot{x} = -g\theta, \\
+            \ddot{y} = \dfrac{uF}{m},
+        \end{cases}
+    \]
+    n’est donc valable que lorsque le couple moteur reste modéré, en particulier en dehors du régime transitoire initial.
+
+    \subsection{3.B Sous-système des trajectoires de référence}
+
+    La figure \ref{fig:q3-2-x} présente les trajectoires de référence pour les deux modèles.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{subSystemX}
+        \caption{Trajectoire en $x$ de référence pour les deux modèles}
+        \label{fig:q3-2-x}
+    \end{figure}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{subSystemY}
+        \caption{Trajectoire en $y$ de référence pour les deux modèles}
+        \label{fig:q3-2-y}
+    \end{figure}
+
+
+    \subsection{3.C Réponses à une consigne d'atterrissage}
+
+    La table~\ref{fig:q3c} présente les trajectoires des deux modèles et les trajectoires de référence.
+
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.8\linewidth]{FigureMatlab/q_3_c}
         \caption{Trajectoires des deux modèles et les trajectoires de référence}
+        \label{fig:q3c}
     \end{figure}
+
     Les deux modèles suivent correctement la consigne d’atterrissage, avec des comportements dynamiques similaires.
     Toutefois, le modèle complet présente des écarts légèrement plus importants que le modèle simplifié, en raison
     de la prise en compte des effets non linéaires.
@@ -210,14 +385,51 @@
         \max_{0 \leq t \leq T_{\text{att}}} \lvert \theta(t) \rvert.
     \]
 
-    FAIRE lE ACTUAL CALCU
+    En utilisant le script suivant sur MATLAB:
 
-    Pour les deux modèles, cette valeur maximale reste inférieure à $15^\circ$.
+    \begin{lstlisting}[language=Matlab]
+theta_ref = data_cpl.thetasim(:,2);
+theta_simp = theta_ref;
+theta_cpl  = data_cpl.thetasim(:,3);
+
+tetha_cpl_min = min(theta_cpl)*180/pi
+tetha_simp_min = min(theta_simp)*180/pi
+tetha_cpl_max = max(theta_cpl)*180/pi
+tetha_simp_max = max(theta_simp)*180/pi
+    \end{lstlisting}
+
+    On obtient les résultats suivants:
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{|c|c|c|}
+            \hline
+            Modèle & Angle minimal $\theta_{\min}$ & Angle maximal $\theta_{\max}$ \\
+            \hline
+            Complet & $-2.18^\circ$ & $3.88^\circ$ \\
+            \hline
+            Simplifié & $-2.38^\circ$ & $4.22^\circ$ \\
+            \hline
+        \end{tabular}
+        \caption{Valeurs minimales et maximales de l'angle de tangage pour les deux modèles}
+    \end{table}
+
+    Pour les deux modèles, la valeur maximale de $|\theta|$ reste inférieure à $15^\circ$.
     L’hypothèse des petits angles, $\lvert \theta \rvert \leq 15^\circ$, est donc respectée sur tout l’intervalle
     $0 \leq t \leq T_{\text{att}}$.
 
-    %\clearpage
-    %\bibliography{main}
-    %\bibliographystyle{plain}
+    \subsection{3.D Simulation}
+
+    La figure \ref{fig:q3d} présente la simulation complète du modèle complet avec les conditions initiales suivantes:
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.8\linewidth]{q-3-d}
+        \caption{Simulation complète du modèle complet}
+        \label{fig:q3d}
+    \end{figure}
+
+    \section{Conclusion}
+    Les fonctions de transfert des trois boucles de commande ont été déterminées analytiquement et validées numériquement, permettant une caractérisation complète du système. La comparaison entre les modèles linéarisé et complet révèle que le modèle simplifié reproduit correctement le régime permanent, mais sous-estime les dépassements et la rapidité en régime transitoire en raison des non-linéarités négligées. La vérification de l'hypothèse des petits angles ($|\theta| \leq 15^\circ$) durant la trajectoire d'atterrissage confirme que le modèle linéarisé demeure valide et approprié pour la conception de lois de commande dans ce contexte opérationnel.
 
 \end{document}

@@ -181,6 +181,13 @@ legend('\theta_{ref}','\theta_{simp}','\theta_{cpl}')
 print -dpng FigureMatlab/q_3_c.png
 close(gcf)
 
+tetha_cpl_min = min(theta_cpl)*180/pi
+tetha_simp_min = min(theta_simp)*180/pi
+tetha_cpl_max = max(theta_cpl)*180/pi
+tetha_simp_max = max(theta_simp)*180/pi
+
+
+
 %% ---- Q3(d) : Export et visualisation dans le simulateur web ----
 fprintf('Q3(d) — Export pour le simulateur web...\n');
 
