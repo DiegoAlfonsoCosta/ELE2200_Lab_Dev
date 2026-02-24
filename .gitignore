@@ -1,10 +1,69 @@
+############################
+# LaTeX build artifacts
+############################
 
-.DS_Store
-slprj/
-.idea/
+# Core LaTeX aux files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.blg
+*.bbl
+*.run.xml
+*.xdv
+*.dvi
+*.ps
+
+# Biblatex / Biber
+*.bib.bak
+
+############################
+# Build directories
+############################
+
+# Makefile / CI builds
+build/
 out/
 
-*.slxc
-*.autosave
+############################
+# Editor / IDE files
+############################
 
+# TeXmaker
+*.tmx
 
+# VS Code
+.vscode/
+
+# JetBrains (PyCharm, CLion, etc.)
+.idea/
+
+############################
+# OS junk
+############################
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+############################
+# Temporary / backup files
+############################
+
+*~
+*.bak
+*.tmp
+*.xml
