@@ -6,6 +6,7 @@ PDF=$(OUT)/main.pdf
 .PHONY: build watch clean open
 
 build:
+	mkdir -p $(OUT)
 	$(LATEX) -output-directory=$(OUT) $(MAIN)
 
 watch:
