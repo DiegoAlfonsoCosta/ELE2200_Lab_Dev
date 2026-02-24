@@ -1,8 +1,8 @@
 # Fdb version 4
-["pdflatex"] 1771874393.15852 "main.tex" "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.pdf" "main" 1771874403.14065 0
-  "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.aux" 1771874402.77863 2751 9f9eeb028f9a475c1ad92e6573f43321 "pdflatex"
-  "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.out" 1771874402.78029 1648 eeaac88aa8302eb405b4a528ae2cf9e7 "pdflatex"
-  "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.toc" 1771874402.78078 654 cb0e23cdb4e602c59e6c8fdabcca29b5 "pdflatex"
+["pdflatex"] 1771952065.69522 "main.tex" "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.pdf" "main" 1771952068.97273 0
+  "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.aux" 1771952068.77661 2850 54704852f4fdb6231870c412f842a55a "pdflatex"
+  "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.out" 1771952068.77743 1648 eeaac88aa8302eb405b4a528ae2cf9e7 "pdflatex"
+  "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.toc" 1771952068.77765 654 cb0e23cdb4e602c59e6c8fdabcca29b5 "pdflatex"
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecbx1095.tfm" 1136768653 3584 21b378cca2e40816b0e6d74a4dc98f04 ""
@@ -240,7 +240,7 @@
   "Graphe_Q1_b).png" 1771887898 37297 e7cd7fe8e8f9880def21c73875dfae34 ""
   "Schema_Fonctionnel_angle.png" 1771887898 6980 2b73513a0d8a2d04b67b762927db9527 ""
   "Script_devoir2.m" 1771887898 4838 85f2e9558735a0172371c497f9f7cbdd ""
-  "main.tex" 1771874377.91193 7954 16137cc074687e7e1f624f0a3f8ddb85 ""
+  "main.tex" 1771952064.35343 8131 38fdd3c12f277614047f2b7e018d8fa2 ""
   (generated)
   "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.aux"
   "/Users/diegoalfonsocosta/DEV/ELE2200_Lab_Dev/Dev_02/ELE2200_Dev_02_Latex-report/out/main.log"
