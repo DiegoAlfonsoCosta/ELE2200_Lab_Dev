@@ -1,0 +1,56 @@
+% styles/custom.sty
+% ==================
+% Custom style file for ELE2200 lab reports
+% Do NOT put \documentclass or \begin{document} here
+
+\ProvidesPackage{styles/custom}[2026/02/24 Custom lab style]
+
+% --------------------------------------------------
+% Core math and symbols
+% --------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+
+% --------------------------------------------------
+% Units and numbers
+% --------------------------------------------------
+\usepackage{siunitx}
+\sisetup{
+  detect-all,
+  per-mode=symbol
+}
+
+% --------------------------------------------------
+% Graphics and figures
+% --------------------------------------------------
+\usepackage{graphicx}
+\usepackage{float}
+
+% --------------------------------------------------
+% Tables
+% --------------------------------------------------
+\usepackage{booktabs}
+\usepackage{array}
+
+% --------------------------------------------------
+% Page layout
+% --------------------------------------------------
+\usepackage[margin=1in]{geometry}
+
+% --------------------------------------------------
+% References (biblatex handled in main.tex)
+% --------------------------------------------------
+\usepackage{csquotes}
+
+% --------------------------------------------------
+% Custom commands
+% --------------------------------------------------
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\dd}{\mathrm{d}}
+
+% --------------------------------------------------
+% Custom environments (optional)
+% --------------------------------------------------
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
