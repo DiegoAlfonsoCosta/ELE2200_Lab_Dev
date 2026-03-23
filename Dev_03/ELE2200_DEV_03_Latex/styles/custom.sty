@@ -5,57 +5,35 @@
 
 \ProvidesPackage{styles/custom}[2026/02/24 Custom lab style]
 
-% --------------------------------------------------
 % Core math and symbols
-% --------------------------------------------------
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{mathtools}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathtools}
 
-% --------------------------------------------------
 % Units and numbers
-% --------------------------------------------------
-\usepackage{siunitx}
+\RequirePackage{siunitx}
 \sisetup{
   detect-all,
   per-mode=symbol
 }
 
-% --------------------------------------------------
 % Graphics and figures
-% --------------------------------------------------
-\usepackage{graphicx}
-\usepackage{float}
+\RequirePackage{graphicx}
+\RequirePackage{float}
 
-% --------------------------------------------------
 % Tables
-% --------------------------------------------------
-\usepackage{booktabs}
-\usepackage{array}
+\RequirePackage{booktabs}
+\RequirePackage{array}
 
-% --------------------------------------------------
 % Page layout
-% --------------------------------------------------
-\usepackage[margin=1in]{geometry}
+\RequirePackage[margin=1in]{geometry}
 
-% --------------------------------------------------
 % References (biblatex handled in main.tex)
-% --------------------------------------------------
-\usepackage{csquotes}
+\RequirePackage{csquotes}
 
-% --------------------------------------------------
-% Custom commands
-% --------------------------------------------------
-\newcommand{\vect}[1]{\boldsymbol{#1}}
-\newcommand{\dd}{\mathrm{d}}
-
-% --------------------------------------------------
 % Custom environments (optional)
-% --------------------------------------------------
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}{Lemma}
-\usepackage{listings}
-\usepackage{xcolor}
+\RequirePackage{listings}
+\RequirePackage{xcolor}
 \lstset{
     language=Matlab,
     basicstyle=\ttfamily\small,
