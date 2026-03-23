@@ -1,6 +1,6 @@
 \section{Question 1}
 \label{sec:q1}
-\subsection{a) Model d'états non-linéaire}
+\subsection{a) Modèle d'états non linéaire}
 
 De l'énoncé les équations suivantes sont données :
 
@@ -49,7 +49,7 @@ syms x1 x2 x3 real
 x_etat = [x1 x2 x3];
 
 f_etat = subs(f_phys,x_phys,x_etat);
-y_etat = subs(g_phys,x_phys,x_etat);
+g_etat = subs(g_phys,x_phys,x_etat);
 \end{lstlisting}
 
 
@@ -68,7 +68,7 @@ x_{1}
 
 
 \subsection{b) Modèle linéarisé autour d'un point d'équilibre}
-Le script suivant est exécuté dans Matlab pour trouver le modèle linéarisé du système autour du point d'équilibre $h_e = 0.05 m$.
+Le script suivant est exécuté dans Matlab pour trouver le modèle linéarisé du système autour du point d'équilibre $h_e = -0.05$ m.
 
 \begin{lstlisting}[language=Matlab]
 x_1_eq = he;
@@ -83,7 +83,8 @@ x_{2,eq} = \left(\begin{array}{c} 0\\ 0 \end{array}\right),
 x_{3,eq}=\left(\begin{array}{c} \mathrm{he}\,\sqrt{\frac{g_{0}\,m}{\mathrm{kf}}}\\ -\mathrm{he}\,\sqrt{\frac{g_{0}\,m}{\mathrm{kf}}} \end{array}\right)
 \end{align}
 
-%todo why do we have two solutions for x3eq ?
+Il y a deux solutions pour $x_{3,eq}$ car l'équation d'équilibre pour le courant $i$ est $i^2 = \frac{m g_0 h_e^2}{k_f}$, ce qui donne deux valeurs possibles : $i = \pm \sqrt{\frac{m g_0 h_e^2}{k_f}}$. La force magnétique dépendant de $i^2$, le signe du courant n'affecte pas la force, mais deux équilibres sont possibles. Ici, on choisit la solution $x_{3,eq} = h_e \sqrt{\frac{g_0 m}{k_f}}$.
+
 
 On obtient :
 \begin{align}
@@ -120,7 +121,7 @@ On obtient :
 \end{align}
 
 
-\subsection{d) Poles du système linéarisé}
+\subsection{d) Pôles du système linéarisé}
 
 Le script suivant est exécuté dans Matlab pour trouver les pôles du système linéarisé
 \begin{lstlisting}[language=Matlab]
@@ -157,7 +158,7 @@ poles_val_vpa = vpa(poles_val,3)
     \text{poles} &=\polessym= \polesval=\polesvalvpa
 \end{align}
 
-\subsection{f) Négligement du pôle rapide}
+\subsection{f) Négligence du pôle rapide}
 Le pôle $p_1 = -268.0$ est très éloigné des deux autres, ce qui correspond à une dynamique beaucoup plus rapide (constante de temps très faible). Son influence sur la réponse globale du système est donc négligeable à l’échelle de temps des autres pôles.
 
 Ainsi, on peut négliger le pôle rapide $p_1 = -268.0$ et conserver uniquement les pôles dominants $p_2 = 19.8$ et $p_3 = -19.8$ pour l’approximation du système.
