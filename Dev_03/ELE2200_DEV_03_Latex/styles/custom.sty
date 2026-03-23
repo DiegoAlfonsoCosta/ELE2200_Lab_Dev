@@ -54,3 +54,30 @@
 % --------------------------------------------------
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+    language=Matlab,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    tabsize=4,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={\%*}{*)},
+    morekeywords={matlab2tikz},
+    literate={é}{{\'{e}}}1 {è}{{\`{e}}}1 {à}{{\`{a}}}1 {ç}{{\c{c}}}1 {ô}{{\^{o}}}1 {É}{{\'{E}}}1 {ê}{{\^{e}}}1 {û}{{\^{u}}}1 {î}{{\^{i}}}1 {ù}{{\`{u}}}1,
+    inputencoding=utf8,
+    extendedchars=true
+}

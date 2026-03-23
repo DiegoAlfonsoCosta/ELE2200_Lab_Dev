@@ -1,3 +1,188 @@
 \section{Question 1}
 \label{sec:q1}
-q1 text
+\subsection{a) Model d'états non-linéaire}
+
+De l'énoncé les équations suivantes sont données :
+
+\begin{gather}
+L \frac{di}{dt} + Ri = u \label{eq:rl} \\
+m\ddot{h} = F_m - F_g \label{eq:motion} \\
+F_m = k_f \frac{i^2}{h^2} \label{eq:force}
+\end{gather}
+On demande le modèle d’état du système ($u$ est la tension sur la Fig.~2), sous la forme
+\begin{align}
+\dot{\mathbf{x}} &= f(\mathbf{x}, u) \label{eq:state1} \\
+y &= g(\mathbf{x}, u), \label{eq:state2}
+\end{align}
+avec $f$ et $g$ des fonctions à déterminer, en prenant
+$\mathbf{x} = [x_1\ x_2\ x_3]^T = [h\ \dot{h}\ i]^T$ et la sortie $y = h$.
+Le script suivant est exécuté dans Matlab pour trouver les fonctions $f$ et $g$ à partir des équations \eqref{eq:rl}, \eqref{eq:motion} et \eqref{eq:force}.
+
+\begin{lstlisting}[language=Matlab]
+% Symbolic variables
+syms m g0 R L kf he real
+
+% Numerical values
+m_val  = 0.025;        % kg
+g0_val = 9.81;         % m/s^2
+R_val  = 22.5;         % Ohm
+L_val  = 0.084;        % H
+kf_val = 2.725e-4;     % N*m^2/A^2
+he_val = -0.05;        % m
+
+sym_vars = [m, g0, R, L, kf, he];
+val_vars = [m_val, g0_val, R_val, L_val, kf_val, he_val];
+
+syms h dh i u real
+
+Fm = kf * (i/h)^2;
+Fg = m*g0;
+
+ddh = (Fm-Fg)/m;
+di = (u-R*i)/L;
+
+x_phys = [ h dh i];
+f_phys = [dh ddh di];
+y_phys = h;
+
+syms x1 x2 x3 real
+x_etat = [x1 x2 x3];
+
+f_etat = subs(f_phys,x_phys,x_etat);
+y_etat = subs(g_phys,x_phys,x_etat);
+\end{lstlisting}
+
+
+On obtient
+
+\begin{align}
+\dot{\mathbf{x}}&=f(\mathbf{x}, u) =
+\left(\begin{array}{c} x_{2}\\[6pt]
+    -\dfrac{g_{0}\,m-\dfrac{\mathrm{kf}\,{x_{3}}^2}{{x_{1}}^2}}{m}\\[10pt]
+    \dfrac{u-R\,x_{3}}{L} \end{array}\right)
+\end{align}
+\begin{align}
+y&=g(\mathbf{x}, u) =
+x_{1}
+\end{align}
+
+
+\subsection{b) Modèle linéarisé autour d'un point d'équilibre}
+Le script suivant est exécuté dans Matlab pour trouver le modèle linéarisé du système autour du point d'équilibre $h_e = 0.05 m$.
+
+\begin{lstlisting}[language=Matlab]
+x_1_eq = he;
+eq1 = subs(f_etat(1),x1,x_1_eq)==0;
+eq2 = subs(f_etat(2),x1,x_1_eq)==0;
+sol = solve([eq1 eq2], [x2 x3]);
+\end{lstlisting}
+
+On obtient :
+\begin{align}
+x_{2,eq} = \left(\begin{array}{c} 0\\ 0 \end{array}\right),
+x_{3,eq}=\left(\begin{array}{c} \mathrm{he}\,\sqrt{\frac{g_{0}\,m}{\mathrm{kf}}}\\ -\mathrm{he}\,\sqrt{\frac{g_{0}\,m}{\mathrm{kf}}} \end{array}\right)
+\end{align}
+
+%todo why do we have two solutions for x3eq ?
+
+On obtient :
+\begin{align}
+    \mathbf{x}_{equilibre}=\left(\begin{array}{ccc} \mathrm{he} & 0 & \mathrm{he}\,\sqrt{\frac{g_{0}\,m}{\mathrm{kf}}} \end{array}\right)= \left(\begin{array}{ccc} -0.05 & 0 & -1.5 \end{array}\right)
+\end{align}
+
+\subsection{c) Linearisation du modèle d'état non linéaire}
+Le script suivant est exécuté dans Matlab pour trouver le modèle linéarisé.
+\begin{lstlisting}[language=Matlab]
+% Define the state-space representation
+A_sym = jacobian(f_etat, x_etat);
+B_sym = jacobian(f_etat, u);
+C_sym = jacobian(g_etat, x_etat);
+D_sym = jacobian(g_etat, u);
+
+A_val = subs(A_sym, [x_etat sym_vars], [x_equi_val val_vars]);
+B_val = subs(B_sym, [x_etat sym_vars], [x_equi_val val_vars]);
+C_val = subs(C_sym, [x_etat sym_vars], [x_equi_val val_vars]);
+D_val = subs(D_sym, [x_etat sym_vars], [x_equi_val val_vars]);
+
+A_val_round = vpa(A_val,3);
+B_val_round = vpa(B_val,3);
+C_val_round = vpa(C_val,3);
+D_val_round = vpa(D_val,3);
+\end{lstlisting}
+
+
+On obtient :
+\begin{align}
+    A &=\Asym=\Avalround \\
+    B &=\Bsym=\Bvalround \\
+    C &=\Csym=\Cvalround \\
+    D &=\Dvalround
+\end{align}
+
+
+\subsection{d) Poles du système linéarisé}
+
+Le script suivant est exécuté dans Matlab pour trouver les pôles du système linéarisé
+\begin{lstlisting}[language=Matlab]
+syms s;
+I = eye(size(A_sym));
+G_sym = subs(C_sym*inv(s*I - A_sym)*B_sym + D_sym, x_etat,x_equi_sym)
+[num, den] = numden(G_sym);   % separate numerator & denominator
+poles = solve(den == 0, s)
+\end{lstlisting}
+
+On obtient :
+\begin{align}
+    G(s) &= \Gsym \\
+\end{align}
+\begin{align}
+    \text{poles} &=\polessym
+\end{align}
+
+\subsection{e) Valeurs numériques de la fonction de transfert et des pôles du système linéarisé}
+Le script suivant est exécuté dans Matlab pour trouver les valeurs numériques de la fonction de transfert et des pôles du système linéarisé
+
+\begin{lstlisting}[language=Matlab]
+G_val = collect(subs(G_sym, sym_vars, val_vars));
+G_val_vpa = vpa(G_val,3)
+poles_val = subs(poles_sym, sym_vars, val_vars);
+poles_val_vpa = vpa(poles_val,3)
+\end{lstlisting}
+
+\begin{align}
+    G(s) &= \Gvalvpa
+\end{align}
+
+\begin{align}
+    \text{poles} &=\polessym= \polesval=\polesvalvpa
+\end{align}
+
+\subsection{f) Négligement du pôle rapide}
+Le pôle $p_1 = -268.0$ est très éloigné des deux autres, ce qui correspond à une dynamique beaucoup plus rapide (constante de temps très faible). Son influence sur la réponse globale du système est donc négligeable à l’échelle de temps des autres pôles.
+
+Ainsi, on peut négliger le pôle rapide $p_1 = -268.0$ et conserver uniquement les pôles dominants $p_2 = 19.8$ et $p_3 = -19.8$ pour l’approximation du système.
+
+\subsection{g) Approximation du système linéarisé par un système d’ordre 2}
+
+En négligeant le pôle rapide $p_1 = -268.0$, on peut approximer la fonction de transfert du système linéarisé par une fonction de transfert d’ordre 2 qui ne contient que les pôles dominants $p_2 = 19.8$ et $p_3 = -19.8$.
+
+Le script suivant est exécuté dans Matlab pour trouver la fonction de transfert d’ordre 2 approximée
+
+\begin{lstlisting}[language=Matlab]
+[num_full, den_full] = numden(G_val);
+num_full = double(sym2poly(num_full));
+den_full = double(sym2poly(den_full));
+K = num_full(end) / den_full(end);
+poles = double([poles_val(2) poles_val(3)]);
+den = poly(poles);
+Ga = tf(K, den);
+[num_G_a, den_G_a] = tfdata(Ga, 'v');
+Ga_sym = poly2sym(num_G_a, s) / poly2sym(den_G_a, s);
+Ga_sym_vpa= vpa(Ga_sym,3);
+\end{lstlisting}
+
+On obtient la fonction de transfert d’ordre 2 approximée :
+
+\begin{align}
+    G_a(s) &= \Gasym=\Gasymvpa
+\end{align}
