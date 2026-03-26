@@ -71,3 +71,7 @@ desktop.ini
 *.slxc
 
 *.mat
+
+*.mlx
+
+*.asv
