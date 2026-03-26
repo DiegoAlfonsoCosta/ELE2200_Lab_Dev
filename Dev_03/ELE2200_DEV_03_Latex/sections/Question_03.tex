@@ -1,3 +1,90 @@
 \section{Question 3}
 \label{sec:q3}
-q3 text
+\subsection*{a) Diagramme fonctionnel du modèle non-linéaire}
+Le diagramme fonctionnel que nous avons fait sous simulink est le suivant: 
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.5]{DiagrammeQ3.png}
+\caption{Diagramme fonctionnel du modèle non-linéaire}
+\end{center}
+\end{figure}
+\noindent Le bloc de fonction matlab vers le centre gauche du diagramme représente la loi de commande suivante: $$u = u_{e}-K_{d}\dot h-K_{p}(h-h_{c})$$
+Le corps de la fonction (dans le bloc "matlab function") est:
+\begin{lstlisting}[language=Matlab]
+function u = u( ue, hc, Kd, Kp,h_point,h)
+u = ue - Kd*h_point -Kp*(h - hc);
+end
+\end{lstlisting}
+De plus, nous avons inclus les conditions initiales d'équilibre dans les intégrateurs, i.e. que nous avons inscrit $i_{e}=1.5$A dans l'intégrateur qui a $\frac{di}{dt}$ en entrée et $i$ en sortie, $\dot h_{e}=0$m dans l'intégrateur qui a $\ddot h$ en entrée et $\dot h$ en sortie ainsi que $h_{e}=-0.05$m dans l'intégrateur qui a $\dot h$ en entrée et $h$ en sortie.
+\subsection*{b) Réponses temporelles}
+D'abord, nous avons implémenté la fonction $h_{c}$ définie par morceaux dans l'énoncé avec la fonction suivante (contenu du bloc "matlab function" de gauche du diagramme simulink en a)):
+\begin{lstlisting}[language=Matlab]
+function hc = hc(t)   
+if (0 <= t) && (t < 5) 
+    hc = -0.05;
+elseif (5 <= t) && (t < 10)
+    hc = -0.075;
+elseif (10 <= t) && (t < 15)
+    hc = -0.06;
+elseif (15 <= t) && (t < 20)
+    hc = -0.055;
+else
+    hc = -0.05;
+end
+\end{lstlisting}
+\newpage \noindent Ensuite, pour tracer les graphes de $h(t)$ et $h_{c}(t)$ superposés ainsi que $u(t)$ séparément, nous avons écrit le script matlab suivant:
+\begin{lstlisting}[language=Matlab]
+%Question 3b) 
+%Valeurs numérique des variables
+m = 0.025;
+g0 = 9.81;
+R = 22.5;
+L = 0.084;
+Kf = 2.725*10^-4;
+he = -0.05;
+Kp = 3050;
+Kd = 105;
+ue = 33.75;
+ie = 1.5;
+h_prime_e = 0;
+%Tracer les graphes de h(t) et de hc(t)
+out_Q3 = sim('SchemaIntegrateurQ3a.slx','Solver','ode45','FixedStep','0.001','StopTime','35')
+plot(out_Q3.h_hc_t(:,1),out_Q3.h_hc_t(:,2),'Color','blue')
+hold on
+plot(out_Q3.h_hc_t(:,1),out_Q3.h_hc_t(:,3),'Color','red')
+grid on
+title("Graphe de $h(t)$ et de $h_{c}(t)$",'Interpreter','latex')
+legend('$h(t)$','$h_{c}(t)$','Interpreter','latex')
+xlabel('t (secondes)','Interpreter','latex','FontSize',9)
+ylabel('$h(t)$ et $h_{c}(t)$ (m\`etres)','Interpreter','latex','FontSize',9)
+hold off
+print -dpng graphe_h_hc_t.png
+%Tracer le graphe de u(t)
+plot(out_Q3.u_t(:,1),out_Q3.u_t(:,2),'Color','magenta')
+grid on
+title("Graphe de la tension d'entr\'ee u(t)","Interpreter","latex")
+xlabel('t (secondes)', 'Interpreter','latex')
+ylabel('u (volts)','Interpreter','latex')
+print -dpng graphe_u_t.png
+\end{lstlisting}
+En exécutant le script matlab ci-dessus, on obtient les graphes suivants:
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[scale=1]{graphe_u_t.png}
+\caption{Graphe de $u(t)$}
+\end{centering}
+\end{figure}
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[scale=1]{graphe_h_hc_t.png}
+\caption{Graphe de $h(t)$ et de $h_{c}(t)$}
+\end{centering}
+\end{figure}
+\newpage \noindent En ce qui concerne le graphe de $h(t)$ et de $h_c(t)$ On peut voir dans les graphes ci-dessus que la hauteur $h(t)$ suit la tendance "en escalier" de la consigne $h_{c}(t)$ mais également qu'il y a un écart non-négligeable en ordonnée (hauteur) entre les deux courbes à chaque sous-intervalle de définition de $h_{c}(t)$. On peut aussi remarquer qu'il n'y a presque pas de décalage (en t) entre les deux courbes, i.e. que lorsque la consigne $h_{c}(t)$ change de manière subite la hauteur $h(t)$ suit presque immédiatment le changement (mais $h$ n'atteint jamais exactement la même valeur que la consigne $h_c$, comme mentionné précédemment). On remarque l'apparition de petits pics aux points de discontinuité (ou de "cassure") de la fonction $h_{c}(t)$. On observe également que les écarts entre $h$ et $h_c$ sont décroissants, i.e. que l'écart entre les deux courbes dans l'intervalle $t \epsilon [15,20]s$ est plus petit que celui dans l'intervalle $t \epsilon [10,15]$, qui est lui-même plus petit que l'écart dans l'intervalle $t \epsilon [5,10]$ \vspace{0.5cm}
+
+ 
+\noindent En ce qui concerne le graphe de la tension d'entrée $u(t)$, on observe que la courbe suit une tendance "en escalier" qui est dûe à $h_c(t)$ qui est une fonction définie par morceaux. On observe également la présence de grands "pics" de tension aux points de discontinuité de la fonction $h_c(t)$, soit aux instants correspondants à 5, 10, 15 et 20 secondes. On observe aussi que les pics sont décroissants lorsque t augmente.
+
+\subsection*{c) Modification du correcteur}
+Comme mentionné en b), on observe dans le graphe des courbes $h(t)$ et $h_c(t)$ que la hauteur $h(t)$ ne suit pas exactement le comportement de la consigne $h_c(t)$. Pour réduire l'écart entre $h(t)$ et $h_c(t)$, il faudrait modifier la loi de commande pour qu'elle puisse réduire l'écart entre $h(t)$ et $h_c(t)$. On pourrait par exemple additionner un intégrateur à la loi de commande (correcteur) actuelle ,qui aurait l'entrée $(h-h_{c})$. Cela permettrait, pour chaque sous-intervalle dans la définition de $h_c(t)$,de faire tendre l'erreur (entre la consigne et la sortie) vers 0. Pour être plus précis, la nouvelle loi de commande aurait la forme suivante: $$u = u_{e}-K_{d}\dot h-K_{p}(h-h_c)+C\int (h-h_c)\text{dt}$$ Si $(h-h_c)>0$, alors le terme $-K_{p}(h-h_c)$ serait négatif et serait graduellement annulé par l'intégrale (qui serait positive et croissante) lorsque t augmente (car l'intégrale d'une constante donne une constante multipliée par t). D'autre part, si $(h-h_c)<0$, alors le terme $-K_{p}(h-h_c)$ serait positif et donc l'intégrale serait négative et décroissante et annulerait graduellement $-K_{p}(h-h_c)$, faisant tendre l'écart entre $h$ et $h_c$ vers 0.

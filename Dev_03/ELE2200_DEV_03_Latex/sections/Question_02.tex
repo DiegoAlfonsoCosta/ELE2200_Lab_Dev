@@ -1,3 +1,123 @@
 \section{Question 2}
 \label{sec:q2}
-q2 text
+
+Pour trouver la fonction de transfert $\frac{\Delta H(s)}{\Delta H_{c}(s)}$ en fonction de $K_{p}$ et $K_{d}$, on peut faire de l'algèbre des diagrammes. D'abord, on part du diagramme fonctionnel de la figure 3 de l'énoncé du devoir:
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=1]{Etape0.png}
+\caption{Diagramme fonctionnel initial}
+\end{center}
+\end{figure}
+\noindent On commence par combiner les blocs en cascade:
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=1]{Etape1.png}
+\caption{Étape 1}
+\end{center}
+\end{figure}
+\newpage \noindent Ensuite, on réduit la boucle de rétroaction négative en un seul bloc:
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=1]{Etape2.png}
+\caption{Étape 2}
+\end{center}
+\end{figure} \newline
+Ensuite, en combinant les blocs en cascade, on obtient:
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=1]{Etape3.png}
+\caption{Étape 3}
+\end{center}
+\end{figure} \newline
+Le diagramme fonctionnel final ci-dessus est une simple boucle de rétroaction négative dont le bloc de transfert est donné par: 
+
+\center \huge \text{$\frac{\frac{K_{p}G_{a}(s)}{1+G_{a}(s)K_{d}s}}{1+\frac{K_{p}G_{a}(s)}{1+G_{a}(s)K_{d}s}}\Rightarrow \frac{\Delta H(s)}{\Delta H_{c}(s)}=\frac{K_{p}G_{a}(s)}{1+G_{a}(s)K_{d}s+K_{p}G_{a}(s)}$}
+
+
+\newpage \raggedright \normalsize Puisqu'il a été établit dans la question 1, que la forme numérique de $G_{a}(s)$ est
+\center \LARGE \text{$G_{a}(s)=\frac{0.58}{s^2-392.4}$}
+
+\raggedright \normalsize alors \newline \center \huge \text{$\frac{\Delta H(s)}{\Delta H_{c}(s)}=\frac{K_{p}(\frac{0.58}{s^2-392.4})}{1+(\frac{0.58}{s^2-392.4})K_{d}s+(\frac{0.58}{s^2-392.4})K_{p}}=\frac{0.58K_{p}}{s^2-392.4+0.58K_{d}s+0.58K_{p}}$} 
+\raggedright \normalsize et donc \newline \center \Large
+\text{$\boxed{\frac{\Delta H(s)}{\Delta H_{c}(s)}=\frac{0.58K_{p}}{s^2+0.58K_{d}s-392.4+0.58K_{p}}}$}
+
+
+\raggedright \normalsize
+\subsection*{b) Identification à l'ordre 2}
+On cherche à déterminer le modèle d'ordre 2 correspondant aux données expérimentales du fichier "data\_Devoir\_3.mat". On cherche à faire une identification à l'ordre 2, donc à trouver les paramètres $K_{s}$ (gain statique), $\xi$ (coefficient d'amortissement) et $\omega_{n}$ dans le modèle général
+
+\center \LARGE \text{$\frac{\Delta H(s)}{\Delta H_{c}(s)}=\frac{K_{s}\omega_{n}^2}{s^2+2\xi \omega_{n}s+ \omega_{n}^2}$} 
+
+
+\raggedright \normalsize On commence par déterminer le gain statique avec l'équation $\frac{\delta h_{RP}}{\delta h_{c}}$. Il est mentionné dans l'énoncé que l'entrée du système dans les données expérimentales est un échelon de $\delta h_{c}=$ 0.01m. Pour trouver la valeur de la sortie en régime permanent, nous avons essentiellement trouvé la valeur du dernier élément du vecteur "y" (donné dans le fichier "data\_Devoir\_3.mat") avec le script matlab suivant:
+\begin{lstlisting}=[language=Matlab]
+load("data_Devoir_3.mat");
+display(y(end))
+\end{lstlisting}
+En faisant exécuter le code ci-dessus, on obtient que $\delta_{RP}=$1.37m. Donc,
+
+\center \Large \text{$\Rightarrow K_{s}=\frac{\delta h_{RP}}{\delta h_{c}}=\frac{\text{0.0137m}}{\text{0.01m}}=\text{1.37}$}
+
+\raggedright \normalsize Ensuite, on calcule le dépassement avec l'équation 
+
+\center \Large \text{D $=\frac{\delta h_{max}-\delta h_{RP}}{\delta h_{RP}}$}
+
+\raggedright \normalsize Pour $\delta h_{max}$, nous avons trouvé la valeur maximale du vecteur "y" dans les données expérimentales avec le script matlab suivant:
+\begin{lstlisting}[language=Matlab]
+load("data_Devoir_3.mat");
+display(max(y))
+\end{lstlisting}
+En faisant exécuter le code ci-dessus, nous avons obtenu la valeur $\delta h_{max}=$0.0143m. \newpage \noindent Donc, 
+
+\center \Large \text{D $=\frac{\delta h_{max}-\delta h_{RP}}{\delta h_{RP}}=\frac{\text{0.0143m}-\text{0.0137m}}{\text{0.0137m}}=0.04379562$}
+
+\raggedright \normalsize Avec le dépassement, on peut calculer le coefficient d'amortissement selon l'équation suivante: 
+
+$$\text{\Large D }=e^{\displaystyle -\frac{\pi \xi}{\sqrt{1-\xi^2}}}\Longleftrightarrow\xi = \sqrt{\frac{(\ln(\text{D}))^2}{\pi^2+(\ln(\text{D}))^2}}=\sqrt{\frac{(\ln(0.04379562))^2}{\pi^2+(\ln(0.04379562))^2}}$$ 
+
+$$\Rightarrow \xi=0.70559718$$
+
+\raggedright \normalsize Ensuite, on trouve la puslation naturelle $\omega_{n}$ avec l'équation suivante: $$T_{p}=\frac{\pi}{\omega_{n}\sqrt{1-\xi^2}}\Longleftrightarrow\omega_{n}=\frac{\pi}{T_{p}\sqrt{1-\xi^2}}$$
+
+Pour trouver le temps de pic, nous avons trouvé le temps correspondant à la valeur maximale du vecteur "y" des données expérimentales avec le script matlab suivant:
+\begin{lstlisting}[language=Matlab]
+load("data_Devoir_3.mat");
+[ligne, colonne] = find(y == max(y));
+display(ligne)
+\end{lstlisting}
+En exécutant le script ci-dessus, on obtient la valeur $T_{p}=$0.1389s. Donc, $$\Rightarrow\omega_{n}=\frac{\pi}{0.1389\sqrt{1-0.70559718^2}}\Rightarrow\omega_{n}=31.91820131\frac{\text{rad}}{\text{s}}$$ Donc, $$\frac{\Delta H(s)}{\Delta H_{c}(s)}=\frac{(1.37)(31.91820131)^2}{s^2+2(0.70559718)(31.91820131)s+(31.91820131)^2}$$
+\begin{equation}
+\boxed{\Rightarrow\frac{\Delta H(s)}{\Delta H_{c}(s)}=\frac{1395.717058}{s^2+45.04278567s+1018.771575} \tag*{(FT de l'identification)}}
+\end{equation}
+Nous avons ensuite écrit le script suivant sur matlab:
+\begin{lstlisting}[language=Matlab]
+load("data_Devoir_3.mat");
+s = tf('s');
+deltaH_identification = (1395.717058)/(s^2 + 45.04278567*s + 1018.771575);
+u = ones(127,1)*0.01;
+[y_identification, t_identification] = lsim(deltaH_identification,u,t);
+plot(t,y, 'b')
+hold on
+plot(t_identification, y_identification, 'r');
+title("R\'eponses $\delta h$ a un \'echelon $\delta h_{c}=0.01m$",'Interpreter','latex');
+grid on
+xlabel('t (en secondes)','FontSize',9)
+ylabel('$\delta h$ (en metres)','Interpreter','latex','FontSize',9)
+legend("exp\'erimentale",'identification','Location','southeast')
+print -dpng Demarches_devoir3.png
+\end{lstlisting} \newpage \noindent
+En exécutant le script matlab ci-dessus, on obtient le graphe suivant:
+
+\begin{figure}[h]
+\begin{centering}
+\includegraphics[scale=1]{Demarches_devoir3.png}
+\caption{Réponse expérimentale et réponse provenant de l'identification}
+\end{centering}
+\end{figure}
+On peut voir dans la figure ci-dessus que la réponse expérimentale est presque identique à la réponse provenant de l'identification qu nous avons effectué plus tôt dans ce rapport. Cela nous indique que la fonction de transfert trouvée lors de notre identification représente très bien le système en boucle fermée linéarisé. On peut donc déduire la valeur des gains $K_{p}$ et $K_{d}$ en comparant la forme de $\frac{\Delta H(s)}{\Delta H_{c}(s)}$ trouvée en a) à celle découlant de l'identification à l'ordre 2: 
+$$\frac{0.58K_{p}}{s^2+0.58K_{d}s-392.4+0.58K_{p}}=\frac{1395.717058}{s^2+45.04278567s+1018.771575}$$
+On fait tendre s vers 0 pour comparer les gains statiques:
+$$\frac{0.58K_{p}}{-392.4+0.58K_{p}}=\frac{1395.717058}{1018.771575}\Longleftrightarrow 0.58K_{p}=-537.5880001+0.7946K_{p}\Longleftrightarrow \boxed{K_{p}=2505.07}$$ 
+Ensuite, par comparaison des coefficients multipliant "s" au dénominateur: 
+$$0.58K_{d} = 45.04278567\Longleftrightarrow \boxed{K_{d}=77.66}$$
