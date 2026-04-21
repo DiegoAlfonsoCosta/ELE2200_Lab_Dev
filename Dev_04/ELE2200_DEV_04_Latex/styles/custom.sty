@@ -1,0 +1,62 @@
+% styles/custom.sty
+% ==================
+% Custom style file for ELE2200 lab reports
+% Do NOT put \documentclass or \begin{document} here
+
+\ProvidesPackage{styles/custom}[2026/04/21 Custom lab style]
+
+% Core math and symbols
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathtools}
+\RequirePackage{bm}
+
+% Units and numbers
+\RequirePackage{siunitx}
+\sisetup{
+  detect-all,
+  per-mode=symbol
+}
+
+% Graphics and figures
+\RequirePackage{graphicx}
+\RequirePackage{float}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+
+% Tables
+\RequirePackage{booktabs}
+\RequirePackage{array}
+
+% Page layout
+\RequirePackage[margin=2.5cm]{geometry}
+
+% Font and encoding (for pdflatex + French accents)
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+
+% References (biblatex handled in main.tex)
+\RequirePackage{csquotes}
+
+% Code listings
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+\lstset{
+    inputencoding=utf8,
+    extendedchars=true
+}
+\lstdefinestyle{matlab}{
+  language=Matlab,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!50!black},
+  stringstyle=\color{red},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=5pt,
+  backgroundcolor=\color{gray!10},
+  frame=single,
+  breaklines=true,
+  showstringspaces=false
+}

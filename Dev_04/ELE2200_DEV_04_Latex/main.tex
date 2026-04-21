@@ -1,0 +1,38 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage{styles/custom}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\begin{titlepage}
+\thispagestyle{empty}
+    \centering
+
+    \vspace*{2cm}
+
+    {\Large \textbf{\textsc{Polytechnique Montréal}}}\\[0.5cm]
+    {\large \textsc{Département de Génie électrique}}\\[2cm]
+
+    {\huge \bfseries ELE2200 - Système et Simulation}\\[0.5cm]
+    {\huge \textbf{Devoir 4 (Hiver 2026)}}\\[2cm]
+
+    {\large
+\begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}r@{}}
+Costa Alfonso Diego & Matricule : 2374165 \\
+Gagnon Louis       & Matricule : 2295595
+\end{tabular*}
+}\\[2cm]
+    {\Large \textbf{Date de remise:} 21 avril 2026}
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+\input{sections/Question_01}
+\input{sections/Question_02}
+
+\printbibliography
+
+\end{document}

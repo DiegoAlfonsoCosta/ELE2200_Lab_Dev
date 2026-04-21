@@ -1,0 +1,84 @@
+\section*{2. Commande de la glycémie en présence de perturbations}
+\addcontentsline{toc}{section}{2. Commande de la glycémie en présence de perturbations}
+\subsection*{a) Simulation non linéaire sans contrôleur}
+\addcontentsline{toc}{subsection}{a) Simulation non linéaire sans contrôleur}
+Nous avons fait le schéma simulink suivant:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{SchemaQ2a.png}
+\caption{Diagramme fonctionnel pour a)}
+\end{figure}
+\noindent Il s'agit du diagramme complété dans la question 1a), mais avec les entrées $u(t)=2H_s(t)$ et $m(t)=5\chi_{[0.5]}(t)$ et un bloc scope pour pouvoir prélever la sortie $G(t)$. Le contenu du bloc "matlab function" est le suivant:
+\begin{lstlisting}[style=matlab]
+function m = fcn(t)
+
+if (t <= 0 && t >= 5)
+    m = 5*1;
+
+else
+    m = 0;
+end
+\end{lstlisting}
+Nous avons ensuite écrit le code matlab suivant pour tracer $G(t)$:
+\begin{lstlisting}[style=matlab]
+x0 = [92, 0, 7.3];  % conditions initiales
+figure(2);
+out1 = sim("BO_Q2.slx", 'Solver','ode45','StopTime','400');
+plot(out1.GBO_Q2(:,1), out1.GBO_Q2(:,2), "Color","b");
+grid on
+title("Graphe de G(t) en BO pour u(t)=2$H_s(t)$ et m(t)=$5\chi_{[0,5]}(t)$", "Interpreter","Latex");
+xlabel("temps (s)", "Interpreter","Latex");
+ylabel("Glyc\'emie G(t) (mg/dL)","Interpreter","latex");
+print -dpng Figure1_Q2a.png;
+% La glycemie se stabilise dans la zone de securite
+\end{lstlisting}
+pour ensuite l'exécuter pour obtenir le graphe suivant:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.75]{Figure1_Q2a.png}
+\caption{Graphe de G(t) en BO}
+\end{figure}
+\noindent On peut voir dans le graphe ci-dessus que la réponse temporelle G(t) débute à 92 pour ensuite passer par un régime transitoire décroissant, pour ensuite se stabiliser à environ 82.5mg/dL. Cette valeur de glycémie est comprise dans l'intervalle de sécurité $70mg/dL < BG < 180mg/dL$. Donc, oui, la glycémie reste dans la zone de sécurité, mais elle semble se stabiliser en dessous du niveau de glycémie basal qui est de 92mg/dL. Cela n'est pas forcément le meilleur cas de figure. Idéalement, on voudrait que la glycémie se stabilise autour du niveau de glycémie basal (92mg/dL).
+
+\subsection*{b) Simulation non linéaire avec contrôleur}
+\addcontentsline{toc}{subsection}{b) Simulation non linéaire avec contrôleur}
+Nous avons fait le schéma simulink suivant:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{SchemaQ2b.png}
+\caption{Diagramme fonctionnel pour b)}
+\end{figure}
+\noindent Il s'agit du diagramme en boucle fermée complété dans la question 1a), mais avec les entrées $u(t)=2H_s(t)$ et $m(t)=5\chi_{[0.5]}(t)$ et un bloc scope pour pouvoir prélever la sortie $G(t)$. Le contenu du bloc "matlab function" est le même que celui de la question précédente (en a).
+Nous avons ensuite écrit le code matlab suivant pour tracer le graphe de $G(t)$ en boucle fermée ainsi qu'un graphe superposant $G(t)$ en boucle ouverte et fermée: \newpage
+\begin{lstlisting}[style=matlab]
+figure(3);
+out3 = sim("BF_Q2.slx", 'Solver','ode45','StopTime','400');
+plot(out3.GBF_Q2(:,1), out3.GBF_Q2(:,2), "Color","b");
+grid on
+title("Graphe de G(t) en BF pour u(t)=2$H_s(t)$ et m(t)=$5\chi_{[0,5]}(t)$", "Interpreter","Latex");
+xlabel("temps (s)", "Interpreter","Latex");
+ylabel("Glyc\'emie G(t) (mg/dL)","Interpreter","latex");
+print -dpng Figure1_Q2b.png;
+figure(4);
+plot(out1.GBO_Q2(:,1), out1.GBO_Q2(:,2), "Color","b");
+hold on
+plot(out3.GBF_Q2(:,1), out3.GBF_Q2(:,2), "Color","r");
+grid on
+title("Graphe de G(t) pour u(t)=2$H_s(t)$ et m(t)=$5\chi_{[0,5]}(t)$", "Interpreter","Latex");
+xlabel("temps (s)", "Interpreter","Latex");
+ylabel("Glyc\'emie G(t) (mg/dL)","Interpreter","latex");
+legend("boucle ouverte", "boucle ferm\'ee","Interpreter", "Latex", "Location","southwest");
+print -dpng Figure2_Q2b.png;
+\end{lstlisting}
+En faisant exécuter le code matlab ci-dessus, on obtient les graphes suivants:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.75]{Figure1_Q2b.png}
+\caption{Réponse en boucle fermée seulement}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.75]{Figure2_Q2b.png}
+\caption{Réponses en boucles ouverte et fermée}
+\end{figure}
+\noindent On observe dans le graphe de la figure 11 que la réponse $G(t)$ débute à 92, passe à travers un régime transitoire oscillatoire (probablement dû à la paire de pôles complexes conjugués) pour ensuite se stabiliser à 92mg/dL (le niveau basal de glycémie $G_b$). La réponse finit donc par se stabiliser directement sur le niveau basal de glycémie $G_b$ qui est bel et bien dans la zone de sécurité. On peut comparer directement les réponses en boucle ouverte et fermée en observant le graphe de la figure 12. On remarque que la réponse en boucle ouverte se stabilise à une glycémie dans la zone de sécurité, certes, mais en-dessous du niveau basal, ce qui peut causer des effets physiologiques non souhaitables. La réponse en boucle fermée, quant à elle, se stabilise directement sur $G_b$, ce qui est nettement plus souhaitable que la valeur en régime permanent en boucle ouverte, car le niveau de glycémie "normal" est exactement 92mg/dL (la valeur optimale pour que l'individu se sente bien, fonctionnement normal du corps reprend). On peut également remarquer que les oscillations dans le régime transitoire de la réponse en boucle fermée ne sortent pas de la zone de sécurité et même qu'elles restent plutôt près de 92mg/dL. Donc, même lorsque la glycémie ne s'est pas encore totalement stabilisée, la réponse en boucle fermée est quand même plus bénéfique que celle en boucle fermée.
