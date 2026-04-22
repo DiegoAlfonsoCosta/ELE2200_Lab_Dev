@@ -1,0 +1,8 @@
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce devoir porte sur la modélisation et la commande d'un pancréas artificiel, dont le rôle est de réguler automatiquement la glycémie d'un patient diabétique de type 1. En l'absence d'insuline endogène, le patient dépend d'une pompe à insuline externe dont le débit doit être ajusté en temps réel pour maintenir la glycémie dans la zone de sécurité comprise entre 70 et 180 mg/dL.
+
+La dynamique du système est décrite par le modèle minimal de Bergman, un modèle non linéaire à trois variables d'état: la glycémie $G(t)$, l'effet de l'insuline sur les tissus $X(t)$ et la concentration d'insuline plasmatique $I(t)$. Le système reçoit deux entrées: le débit d'insuline $u(t)$ et l'apport glucidique lié aux repas $m(t)$.
+
+Le devoir est structuré en trois parties. La première porte sur l'analyse du modèle avec un correcteur PID: recherche des points d'équilibre en boucle ouverte et fermée, linéarisation autour de ces points, extraction des fonctions de transfert, analyse de stabilité par le critère de Routh-Hurwitz et lieu des racines, et calcul de l'erreur en régime permanent. La deuxième partie compare les réponses en boucle ouverte et fermée du modèle non linéaire face à une perturbation de repas. La troisième évalue la robustesse du système en comparant le modèle linéarisé au modèle non linéaire pour différentes valeurs de $K_p$ et pour une perturbation de grande amplitude.
