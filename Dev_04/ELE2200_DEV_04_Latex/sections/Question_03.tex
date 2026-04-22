@@ -1,0 +1,102 @@
+\section*{3. Robustesse du système de pancréas artificiel}
+\addcontentsline{toc}{section}{3. Robustesse du système de pancréas artificiel}
+
+\subsection*{a) Comparaison entre le modèle linéarisé et non linéaire}
+\addcontentsline{toc}{subsection}{a) Comparaison entre le modèle linéarisé et non linéaire}
+
+Cette sous-question demande de simuler le modèle linéarisé en boucle fermée (en utilisant $G_{u_{BF}}$ et $G_{m_{BF}}$ trouvées en 1e) dans un schéma Simulink \texttt{BF\_Q3.slx} et de comparer sa réponse à celle du modèle non linéaire de la question 2b), pour les mêmes entrées $u(t)=2H_s(t)$ et $m(t)=5\chi_{[0,5]}(t)$.
+
+Le schéma Simulink utilisé est le suivant:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{SchemaQ3.png}
+\caption{Diagramme fonctionnel du modèle linéarisé en boucle fermée (\texttt{BF\_Q3.slx})}
+\end{figure}
+\noindent Il s'agit du même diagramme en boucle fermée que celui de la question 1a), mais où les blocs non linéaires du modèle de Bergman sont remplacés par les fonctions de transfert linéarisées $G_{u_{BF}}(s)$ et $G_{m_{BF}}(s)$, dont les numérateurs et dénominateurs sont passés en paramètre via les variables \texttt{num\_u}, \texttt{den\_u}, \texttt{num\_m} et \texttt{den\_m}.
+
+Nous avons extrait ces coefficients et simulé le modèle linéarisé avec le code suivant:
+\begin{lstlisting}[style=matlab]
+[num_u, den_u] = tfdata(Gu_BF, 'v');
+[num_m, den_m] = tfdata(Gm_BF, 'v');
+out3a = sim("BF_Q3.slx", 'Solver','ode45','StopTime','400');
+\end{lstlisting}
+
+Le graphe ci-dessous superpose la réponse du modèle linéarisé (vert) et celle du modèle non linéaire (rouge) sur 400 secondes:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.75]{Q3a_lin_nonlin.png}
+\caption{Comparaison des réponses linéarisée et non linéaire pour $K_p=0.5$}
+\end{figure}
+
+\noindent Les deux courbes partent de $G_b = 92$ mg/dL mais divergent rapidement. Le modèle non linéaire oscille entre 72 et 108 mg/dL puis converge vers $G_b = 92$ mg/dL. Le modèle linéarisé présente un transitoire nettement plus oscillatoire: la glycémie monte jusqu'à environ 165 mg/dL avant de chuter sous 40 mg/dL, puis oscille lentement vers l'équilibre.
+
+Cet écart s'explique par la nature même de la linéarisation: les fonctions de transfert $G_{u_{BF}}$ et $G_{m_{BF}}$ ne sont valides qu'au voisinage immédiat du point d'équilibre. Les entrées appliquées ici ($u=2$ et $m=5$) poussent le système suffisamment loin de ce point pour que le modèle linéaire prédise une dynamique très différente du comportement réel.
+
+\subsection*{b) Effet de l'augmentation de $K_p$ sur la réponse linéarisée}
+\addcontentsline{toc}{subsection}{b) Effet de l'augmentation de $K_p$ sur la réponse linéarisée}
+
+Cette sous-question demande d'étudier comment le gain $K_p$ modifie la réponse du modèle linéarisé. $K_p$ varie de 0.5 à 8.5 par pas de 2, avec $K_d=0.01$ et $K_i=0.1$ fixes. Pour chaque valeur de $K_p$, le système est re-linéarisé afin de tenir compte du changement de point d'équilibre.
+
+\begin{lstlisting}[style=matlab]
+Kp_start = 0.5;
+Kp_end   = 10.0;
+Kp_step  = 2;
+Kd = 0.01;
+Ki = 0.1;
+m_value = 5;
+
+for Kp = Kp_start : Kp_step : Kp_end
+    x0 = [92; 0; 7.3; 0];
+    u0 = [0; 0];
+    [x_BF, u_BF, ~, ~] = trim("BergmanInOutBF_incomplet", x0, u0);
+    [A_BF, B_BF, C_BF, D_BF] = linmod("BergmanInOutBF_incomplet", x_BF, u_BF);
+    ModEtat_BF = ss(A_BF, B_BF, C_BF, D_BF);
+    FT_BF = tf(ModEtat_BF);
+    Gu_BF = minreal(FT_BF(1));
+    Gm_BF = minreal(FT_BF(2));
+    [num_u, den_u] = tfdata(Gu_BF, 'v');
+    [num_m, den_m] = tfdata(Gm_BF, 'v');
+    out3a = sim("BF_Q3.slx", 'Solver','ode45','StopTime','400','MaxStep','0.1');
+end
+\end{lstlisting}
+
+Le graphe superpose les cinq réponses linéarisées et la réponse non linéaire de référence (tirets noirs, $K_p=0.5$):
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.75]{Q3b_effet_Kp.png}
+\caption{Réponses linéarisées pour $K_p \in \{0.5,\, 2.5,\, 4.5,\, 6.5,\, 8.5\}$ et réponse non linéaire}
+\end{figure}
+
+\noindent Pour $K_p = 0.5$, le modèle linéarisé présente les oscillations les plus prononcées: la glycémie monte à environ 165 mg/dL, oscille avec une grande amplitude et met plusieurs centaines de secondes à converger. Pour $K_p \geq 2.5$, les réponses linéarisées convergent toutes rapidement et se regroupent autour de 93 mg/dL avant $t = 100$ s, avec peu d'oscillations. La réponse non linéaire (tirets noirs) provient de la simulation de la question 2b) avec $K_p = 0.5$; elle oscille modérément entre 69 et 106 mg/dL et converge vers 92 mg/dL.
+
+La re-linéarisation à chaque valeur de $K_p$ donne des points d'équilibre et des dynamiques différents. À $K_p = 0.5$, les pôles du système linéarisé sont peu amortis, ce qui explique les grandes oscillations observées. À $K_p$ plus élevé, le point d'équilibre trouvé par \texttt{trim()} change et les pôles résultants sont mieux amortis, d'où une convergence plus rapide.
+
+\subsection*{c) Robustesse face à une grande perturbation}
+\addcontentsline{toc}{subsection}{c) Robustesse face à une grande perturbation}
+
+Cette sous-question demande de tester le comportement du modèle linéarisé lorsque la perturbation de repas est dix fois plus grande ($m=50$ au lieu de $m=5$), avec $K_p=5$.
+
+\begin{lstlisting}[style=matlab]
+Kp = 5;
+m_value = 50;
+[x_BF, u_BF, ~, ~]       = trim("BergmanInOutBF_incomplet", x0, u0);
+[A_BF, B_BF, C_BF, D_BF] = linmod("BergmanInOutBF_incomplet", x_BF, u_BF);
+ModEtat_BF                = ss(A_BF, B_BF, C_BF, D_BF);
+FT_BF                     = tf(ModEtat_BF);
+Gu_BF                     = minreal(FT_BF(1));
+Gm_BF                     = minreal(FT_BF(2));
+[num_u, den_u]            = tfdata(Gu_BF, 'v');
+[num_m, den_m]            = tfdata(Gm_BF, 'v');
+out3a = sim("BF_Q3.slx", 'Solver','ode45','StopTime','400','MaxStep','0.1');
+\end{lstlisting}
+
+Le graphe ci-dessous montre la réponse du modèle linéarisé dans ces conditions:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.75]{Q3c_robustesse.png}
+\caption{Réponse du modèle linéarisé pour $K_p=5$ et $m(t)=50\chi_{[0,5]}(t)$}
+\end{figure}
+
+\noindent La réponse du modèle linéarisé atteint un pic d'environ 950 mg/dL vers $t = 15$ s, soit cinq fois la limite supérieure de la zone de sécurité. Elle passe ensuite sous zéro (jusqu'à $-450$ mg/dL), ce qui est physiologiquement impossible. Le modèle linéarisé est donc incapable de représenter le comportement réel du système pour une perturbation de cette amplitude.
+
+Ces résultats montrent les limites du modèle linéarisé: une perturbation dix fois plus grande éloigne le système de son point de linéarisation à un point tel que les hypothèses de linéarisation (petits signaux, voisinage de l'équilibre) ne tiennent plus. Le contrôleur PID conçu autour d'un seul point d'équilibre ne peut pas gérer des perturbations de grande amplitude. Pour assurer la sécurité du patient dans ce cas, il faudrait une approche non linéaire ou une re-linéarisation adaptative du modèle autour de l'état courant.
