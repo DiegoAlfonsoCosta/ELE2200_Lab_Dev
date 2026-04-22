@@ -122,6 +122,8 @@ p_1 = -0.0057-0.0545i\\
 p_2 = -0.02\\
 p_3 = -0.3
 \end{cases}$$
+\noindent Les pôles du système en boucle ouverte sont tous réels et négatifs, ce qui confirme que le système est stable sans oscillations. En boucle fermée, les pôles $p_2$ et $p_3$ restent réels négatifs, mais une paire de pôles complexes conjugués $p_0$ et $p_1$ apparaît avec une partie réelle de $-0.0057$ et une partie imaginaire de $\pm 0.0545$. Puisque toutes les parties réelles sont négatives, le système en boucle fermée est également stable. Cependant, la présence de la paire complexe conjuguée indique que la réponse temporelle sera oscillatoire et amortie, ce qui se confirmera dans les simulations des questions suivantes.
+
 \subsection*{f) Stabilité pour un correcteur proportionnel}
 \addcontentsline{toc}{subsection}{f) Stabilité pour un correcteur proportionnel}
 En utilisant seulement $G_{u_{BO}}(s)$ trouvée auparavant, on peut schématiser le système linéarisé en boucle fermée comme suit:
@@ -214,20 +216,14 @@ Pour l'erreur en régime permanent du système en boucle fermée, nous avon déc
 \caption{Schema simulink}
 \end{figure}
 \noindent Dans ce schéma, le bloc de transfert est
-$G_{u_{BF}}(s)=\frac{0.1083s^3+0.03467s^2-0.0003252s+1.371\times 10^{-23}}{s^4+0.3315s^3+0.01267s^2+0.001029s+1.8\times 10^{-5}}$, l'entrée est la somme de $\delta u(t)=2H_s(t)$ avec la valeur d'équilibre en boucle fermée $u_e=-2.0028$ trouvée en c) et la sortie prélevée par le bloc scope est la somme de la sortie $\delta G(t)$ et la valeur d'équilibre en boucle fermée $G_e = 92$ trouvée en c). Nous avons fait ainsi, car $G_{u_{BF}}$ est une fonction de transfert linéarisée autour d'un point d'équilibre. Donc, si on veut une réponse complète et correcte, il faut inclure les valeurs d'équilibre (d'ou les valeurs d'équilibre ajoutées de par les sommateurs). Ensuite, nous avons écrit le code matlab ci-dessous pour tracer la réponse complète $\delta G(t) + G_e$:
+$G_{u_{BF}}(s)=\frac{0.1083s^3+0.03467s^2-0.0003252s+1.371\times 10^{-23}}{s^4+0.3315s^3+0.01267s^2+0.001029s+1.8\times 10^{-5}}$, l'entrée est la somme de $\delta u(t)=2H_s(t)$ avec la valeur d'équilibre en boucle fermée $u_e=-2.0028$ trouvée en c) et la sortie prélevée par le bloc scope est la somme de la sortie $\delta G(t)$ et la valeur d'équilibre en boucle fermée $G_e = 92$ trouvée en c). Nous avons fait ainsi, car $G_{u_{BF}}$ est une fonction de transfert linéarisée autour d'un point d'équilibre. Donc, si on veut une réponse complète et correcte, il faut inclure les valeurs d'équilibre (d'ou les valeurs d'équilibre ajoutées de par les sommateurs). Ensuite, nous avons simulé le système avec le code matlab suivant pour obtenir la réponse complète $\delta G(t) + G_e$:
 \begin{lstlisting}[style=matlab]
 out0 = sim("BF_Q1_ERP.slx", 'Solver','ode45','StopTime','2000');
-plot(out0.ERP(:,1), out0.ERP(:,2), "Color","b");
-grid on
-title("Graphe de G(t) en BF lin\'earis\'e pour $\delta u(t)=2H_s(t)$ et $\delta m(t)=0$", "Interpreter","Latex");
-xlabel("temps (s)", "Interpreter","Latex");
-ylabel("Glyc\'emie G(t) (mg/dL)","Interpreter","latex");
-print -dpng ERP.png;
 \end{lstlisting}
 pour ensuite l'exécuter, pour obtenir le graphe suivant:
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.75]{ERP.png}
+\includegraphics[scale=0.75]{Q1h_erp.png}
 \caption{Réponse pour calculer l'ERP}
 \end{figure}
 \noindent On peut voir dans le graphe ci-dessus que la glycémie finit par se stabiliser à 92mg/dL, ce qui est exactement la valeur de $G_b$. Donc, puisque il a été définie dans l'énoncé que $e(t)=G(t)-G_b$, alors l'erreur $e(t)$ lorsque t tend vers l'infini tend vers 0. On peut dire que l'erreur en régime permanent est de 0.
